@@ -49,3 +49,7 @@ GoogleService-Info.plist
 firebase_app_id_file.json
 firebase-debug.log
 .firebase/
+functions/*.json       
+functions/venv/         
+functions/__pycache__/  
+*.pyc    
