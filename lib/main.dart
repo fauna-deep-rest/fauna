@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'views/homepage.dart';
-import 'views/chatPage/sparkyChatPage.dart';
-import 'views/chatPage/bizy/bizyChatPage.dart';
-import 'views/chatPage/bruno/brunoChatPage.dart';
+import 'views/chat_page/sparky_chat_page.dart';
+import 'views/chat_page/bizy/bizy_chat_page.dart';
+import 'views/chat_page/bruno/bruno_chat_page.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 
