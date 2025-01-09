@@ -1,4 +1,6 @@
+import 'package:fauna/services/navigation.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -85,9 +87,22 @@ class _HomePageState extends State<HomePage> {
                         style: const TextStyle(fontSize: 16),
                       ),
                       const SizedBox(height: 16),
-                      Image.asset(
-                        character['image']!,
-                        height: 200,
+                      GestureDetector(
+                        onTap: () {
+                          if (_currentIndex == 0) {
+                            Provider.of<NavigationService>(context,
+                                    listen: false)
+                                .goSparky();
+                          } else if (_currentIndex == 1) {
+                            print("bruno");
+                          } else if (_currentIndex == 2) {
+                            print("bizy");
+                          }
+                        },
+                        child: Image.asset(
+                          character['image']!,
+                          height: 200,
+                        ),
                       ),
                     ],
                   ),

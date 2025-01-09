@@ -5,14 +5,31 @@ class UserRepository {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
   final timeout = const Duration(seconds: 10);
 
-  Future<void> addUser(User user) async {
-    Map<String, dynamic> userMap = user.toMap();
-    // Remove 'id' because Firestore automatically generates a unique document ID for each new document added to the collection.
-    userMap.remove('id');
+  Future<User> addUser(String userId, String name, String sparkyId) async {
+    Map<String, dynamic> userMap = {
+      'name': name,
+      'sparkyId': sparkyId,
+      'brunoId': "",
+      'bizyId': ""
+    };
     await _db
         .collection('users')
-        .doc("user_${user.id}")
+        .doc(userId)
         .set(userMap); // write to local cache immediately
     //.timeout(timeout); // Add timeout to handle network issues
+    return User(
+        id: userId, name: name, sparkyId: sparkyId, brunoId: "", bizyId: "");
+  }
+
+  Future<User?> getUserById(String userId) async {
+    try {
+      DocumentSnapshot doc = await _db.collection('users').doc(userId).get();
+      if (doc.exists) {
+        return User.fromMap(doc.data() as Map<String, dynamic>, doc.id);
+      }
+    } catch (e) {
+      print('Error getting user: $e');
+    }
+    return null;
   }
 }

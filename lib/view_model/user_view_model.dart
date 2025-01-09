@@ -5,7 +5,7 @@ import '../repositories/user_repo.dart';
 
 class AllUsersViewModel with ChangeNotifier {
   final UserRepository _userRepository;
-  User? currentUser;
+  late User currentUser;
 
   AllUsersViewModel({UserRepository? userRepository})
       : _userRepository = userRepository ?? UserRepository();
@@ -15,8 +15,27 @@ class AllUsersViewModel with ChangeNotifier {
     super.dispose();
   }
 
-  Future<void> addUser(User newUser) async {
-    await _userRepository.addUser(newUser);
-    currentUser = newUser;
+  Future<User?> getUserById(String userId) async {
+    try {
+      final user = await _userRepository.getUserById(userId);
+      if (user != null) {
+        currentUser = user;
+        print("Set current user in getUserById");
+      }
+      return user;
+    } catch (e) {
+      print('Error getting user: $e');
+    }
+    return null;
+  }
+
+  Future<void> addUser(String userId, String name, String sparkyId) async {
+    try {
+      final newUser = await _userRepository.addUser(userId, name, sparkyId);
+      currentUser = newUser;
+      print("Set current user in addUser");
+    } catch (e) {
+      print('Failed to add user: $e');
+    }
   }
 }

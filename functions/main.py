@@ -13,7 +13,7 @@ from firebase_functions import firestore_fn, https_fn
 from firebase_admin import initialize_app, credentials, firestore
 import sparky_prompt, bizy_prompt, bruno_prompt
 
-cred = credentials.Certificate("") # todo: put certufication key here
+cred = credentials.Certificate("fauna-ed8b5-firebase-adminsdk-h5itr-dcc0f3f786.json") # todo: put certufication key here
 initialize_app(cred)
 db = firestore.client()
 
@@ -22,11 +22,11 @@ def sparky_completion(req: https_fn.CallableRequest) -> any:
     client = OpenAI(api_key=os.environ.get("OPENAI_APIKEY"))
 
     try:
-        id = req.data["user_id"]
+        id = req.data["sparky_id"]
         dialogues = req.data["dialogues"]
-        summary = db.collection('users').document(f'user_{id}').get().get('summary')
+        summary = db.collection('sparky').document(id).get().get('summary')
 
-        if summary is None and not dialogues:
+        if not summary and not dialogues:
             dialogues = [
                 {
                     'role': 'user',
@@ -36,7 +36,8 @@ def sparky_completion(req: https_fn.CallableRequest) -> any:
 
         prompt = sparky_prompt.get_prompt()
         if summary:
-            prompt.append({"role":"assistant", "content":summary})
+            for item in summary:
+                prompt.append({"role": "assistant", "content": item})
         prompt += dialogues
     except Exception as e:
         raise https_fn.HttpsError(code=https_fn.FunctionsErrorCode.INVALID_ARGUMENT,
@@ -151,7 +152,7 @@ def update_summary(req: https_fn.CallableRequest) -> any:
             messages=dialogues + prompt,
         )
         message = response.choices[0].message.content
-        db.collection("users").document(f'user_{user_id}').update({"summary": message})
+        #db.collection("users").document(f'user_{user_id}').update({"summary": message})
         return message
     
     except Exception as e:

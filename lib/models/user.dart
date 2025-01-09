@@ -1,29 +1,37 @@
 import 'package:flutter/foundation.dart';
 
 class User extends ChangeNotifier {
-  String? id;
-  String name = '';
-  String summary = '';
+  final String id;
+  String name;
+  String sparkyId;
+  String? brunoId; // 可選的屬性
+  String? bizyId; // 可選的屬性
 
   User({
     required this.id,
     required this.name,
-    required this.summary,
+    required this.sparkyId,
+    this.brunoId,
+    this.bizyId,
   });
 
   Map<String, dynamic> toMap() {
     return {
       'id': id,
       'name': name,
-      'summary': summary,
+      'sparkyId': sparkyId,
+      'brunoId': brunoId,
+      'bizyId': bizyId,
     };
   }
 
-  factory User.fromMap(Map<String, dynamic> map, String? id) {
+  factory User.fromMap(Map<String, dynamic> map, String id) {
     return User(
       id: id,
-      name: map['name'],
-      summary: map['summary'],
+      name: map['name'] ?? '',
+      sparkyId: map['sparkyId'] ?? '',
+      brunoId: map['brunoId'] ?? '',
+      bizyId: map['bizyId'] ?? '',
     );
   }
 }

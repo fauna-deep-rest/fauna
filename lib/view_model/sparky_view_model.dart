@@ -1,56 +1,84 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:cloud_functions/cloud_functions.dart'; // 添加这一行
+import 'package:cloud_functions/cloud_functions.dart';
+import 'package:provider/provider.dart';
+import '../repositories/sparky_repo.dart';
+import '../models/sparky.dart';
 
-class SparkyViewModel {
-  bool _isLoading = false;
-  final id = '1';
-  String agentOutput = '';
+class SparkyViewModel with ChangeNotifier {
+  Sparky? sparky;
+  final SparkyRepository _repository = SparkyRepository();
+  //List<Map<String, String>> get dialogues => List.unmodifiable(_dialogues);
+  String sparkyOutput = '';
   List<Map<String, String>> _dialogues = [];
 
-  Future<void> _loadData() async {
-    //setState(() => _isLoading = true);
-    try {
-      final response = await FirebaseFunctions.instance
-          .httpsCallable('sparky_completion')
-          .call({"dialogues": _dialogues, "user_id": id});
-      // setState(() {
-      //   agentOutput = response.data.toString();
-      //   _dialogues.add({'role': 'assistant', 'content': agentOutput});
-      // });
-    } catch (e) {
-      print('Error loading prompt: $e');
-    } finally {
-      //setState(() => _isLoading = false);
+  Future<void> createSparky(String sparkyId) async {
+    await _repository.createSparky(sparkyId);
+  }
+
+  Future<Sparky?> loadSparky(String sparkyId) async {
+    sparky = await _repository.fetchSparky(sparkyId);
+    return sparky;
+  }
+
+  Future<void> addSummary(String newSummary) async {
+    if (sparky != null) {
+      sparky!.addSummary(newSummary);
+      await _repository.addSummary(sparky!.id, newSummary);
+      notifyListeners();
     }
   }
 
-  Future<void> _handleSubmit(String prompt) async {
-    if (prompt.trim().isEmpty) return;
-    // setState(() {
-    //   _dialogues.add({'role': 'user', 'content': prompt});
-    // });
-
-    final response = await FirebaseFunctions.instance
-        .httpsCallable('sparky_completion')
-        .call({"dialogues": _dialogues, "user_id": id});
-
-    if (response.data['action'] == 'guide_to_bizy') {
-      await FirebaseFunctions.instance
-          .httpsCallable('update_summary')
-          .call({"dialogues": _dialogues});
+  Future<void> loadData(String sparkyId) async {
+    try {
+      sparky = await _repository.fetchSparky(sparkyId);
+    } catch (e) {
+      print("load sparky failed");
     }
+    try {
+      final response = await FirebaseFunctions.instance
+          .httpsCallable('sparky_completion')
+          .call({"dialogues": _dialogues, "sparky_id": sparkyId});
 
-    // setState(() {
-    //   agentOutput = response.data.toString();
-    //   _dialogues.add({'role': 'assistant', 'content': agentOutput});
-    //   if (response.data['action'] == 'guide_to_bruno') {
-    //     Provider.of<NavigationService>(context, listen: false).goBruno();
-    //   }
-    //   if (response.data['action'] == 'guide_to_bizy') {
-    //     _isLoading = true;
-    //     Provider.of<NavigationService>(context, listen: false).goBizy();
-    //   }
-    // });
+      sparkyOutput = response.data.toString();
+      _dialogues.add({'role': 'assistant', 'content': sparkyOutput});
+    } catch (e) {
+      print('Error loading prompt: $e');
+    } finally {
+      print("load data for sparky success.");
+      notifyListeners();
+    }
+  }
+
+  Future<void> handleSubmit(
+      String id, String prompt, BuildContext context) async {
+    if (prompt.trim().isEmpty) return;
+    _dialogues.add({'role': 'user', 'content': prompt});
+
+    try {
+      print("start getting response: $_dialogues");
+      final response = await FirebaseFunctions.instance
+          .httpsCallable('sparky_completion')
+          .call({"dialogues": _dialogues, "sparky_id": id});
+
+      sparkyOutput = response.data.toString();
+      _dialogues.add({'role': 'assistant', 'content': sparkyOutput});
+      //notifyListeners();
+
+      if (response.data['action'] == 'guide_to_bruno') {
+        //Provider.of<NavigationService>(context, listen: false).goBruno();
+      } else if (response.data['action'] == 'guide_to_bizy') {
+        final summary = await FirebaseFunctions.instance
+            .httpsCallable('update_summary')
+            .call({"dialogues": _dialogues});
+
+        _repository.addSummary(sparky!.id, summary.toString());
+        // _isLoading = true;
+        // notifyListeners();
+        //Provider.of<NavigationService>(context, listen: false).goBizy();
+      }
+    } catch (e) {
+      print('Error handling submission: $e');
+    }
   }
 }
