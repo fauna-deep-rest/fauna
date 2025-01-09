@@ -1,3 +1,4 @@
+import 'package:fauna/services/navigation.dart';
 import 'package:fauna/view_model/user_view_model.dart';
 import 'package:flutter/material.dart';
 import 'package:fauna/view_model/sparky_view_model.dart';
@@ -36,7 +37,8 @@ class _SparkyChatPageState extends State<SparkyChatPage> {
     setState(() {
       isLoading = true;
     });
-    await sparkyViewModel.loadData(userViewModel.currentUser.sparkyId);
+    await sparkyViewModel.loadData(
+        "sparky_01"); //change this to "sparky_01" to test, userViewModel.currentUser.sparkyId for real situations.
     setState(() {
       isLoading = false;
     });
@@ -114,23 +116,47 @@ class _SparkyChatPageState extends State<SparkyChatPage> {
                           SizedBox(height: 16.0),
 
                           // Sparky image
-                          Container(
-                            width: 200,
-                            height: 200,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: Colors.grey[800],
-                            ),
-                            child: Center(
-                              child: Image.asset(
-                                'assets/images/sparky/sparky.png', // Replace with the correct path to Sparky's image
-                                width: 100,
-                                height: 100,
+                          Column(
+                            children: [
+                              Container(
+                                width: 200,
+                                height: 200,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: Colors.grey[800],
+                                ),
+                                child: Center(
+                                  child: Image.asset(
+                                    'assets/images/sparky/sparky.png',
+                                    width: 100,
+                                    height: 100,
+                                  ),
+                                ),
                               ),
-                            ),
+                              SizedBox(height: 16.0),
+                              if (sparkyViewModel.showBizyButton)
+                                ElevatedButton(
+                                  onPressed: () {
+                                    Provider.of<NavigationService>(context,
+                                            listen: false)
+                                        .goBizy();
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.blue,
+                                    padding: EdgeInsets.symmetric(
+                                        horizontal: 24, vertical: 12),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                  ),
+                                  child: Text(
+                                    'Talk to Bizy',
+                                    style: TextStyle(
+                                        fontSize: 16, color: Colors.white),
+                                  ),
+                                ),
+                            ],
                           ),
-
-                          SizedBox(height: 16.0),
                         ],
                       ),
                     ),
@@ -177,9 +203,7 @@ class _SparkyChatPageState extends State<SparkyChatPage> {
                                 });
 
                                 await sparkyViewModel.handleSubmit(
-                                    userViewModel.currentUser.sparkyId,
-                                    text,
-                                    context);
+                                    "sparky_01", text, context);
 
                                 setState(() {
                                   isGettingResponse = false;

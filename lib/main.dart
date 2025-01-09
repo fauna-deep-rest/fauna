@@ -7,11 +7,14 @@ import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'package:fauna/services/navigation.dart';
 import 'package:provider/provider.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 
 void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
+  FirebaseFunctions.instance.useFunctionsEmulator('localhost', 5001);
   runApp(MyApp());
 }
 

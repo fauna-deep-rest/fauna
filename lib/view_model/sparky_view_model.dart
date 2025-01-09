@@ -11,6 +11,7 @@ class SparkyViewModel with ChangeNotifier {
   //List<Map<String, String>> get dialogues => List.unmodifiable(_dialogues);
   String sparkyOutput = '';
   List<Map<String, String>> _dialogues = [];
+  bool showBizyButton = false;
 
   Future<void> createSparky(String sparkyId) async {
     await _repository.createSparky(sparkyId);
@@ -56,7 +57,7 @@ class SparkyViewModel with ChangeNotifier {
     _dialogues.add({'role': 'user', 'content': prompt});
 
     try {
-      print("start getting response: $_dialogues");
+      print("start getting response!");
       final response = await FirebaseFunctions.instance
           .httpsCallable('sparky_completion')
           .call({"dialogues": _dialogues, "sparky_id": id});
@@ -70,12 +71,11 @@ class SparkyViewModel with ChangeNotifier {
       } else if (response.data['action'] == 'guide_to_bizy') {
         final summary = await FirebaseFunctions.instance
             .httpsCallable('update_summary')
-            .call({"dialogues": _dialogues});
+            .call({"dialogues": _dialogues, "action": 'guide_to_bizy'});
 
-        _repository.addSummary(sparky!.id, summary.toString());
-        // _isLoading = true;
-        // notifyListeners();
-        //Provider.of<NavigationService>(context, listen: false).goBizy();
+        // _repository.addSummary(sparky!.id, summary.toString());
+        showBizyButton = true;
+        //notifyListeners();
       }
     } catch (e) {
       print('Error handling submission: $e');

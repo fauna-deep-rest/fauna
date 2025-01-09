@@ -26,19 +26,33 @@ def sparky_completion(req: https_fn.CallableRequest) -> any:
         dialogues = req.data["dialogues"]
         summary = db.collection('sparky').document(id).get().get('summary')
 
-        if not summary and not dialogues:
-            dialogues = [
-                {
-                    'role': 'user',
-                    'content': 'Who are you?'
-                }
-            ]
-
         prompt = sparky_prompt.get_prompt()
+
+        if not summary and not dialogues:
+            dialogues = [{
+                'role': 'user',
+                'content': 'Who are you?'
+            }]
+        
         if summary:
-            for item in summary:
-                prompt.append({"role": "assistant", "content": item})
-        prompt += dialogues
+            numbered_summary = "\n".join([f"{i+1}. {item}" for i, item in enumerate(summary)])
+            prompt.append({
+                "role": "system", 
+                "content": f"Following contents are your memory with this user:\n{numbered_summary}"
+            })
+            
+            if not dialogues:
+                prompt.append({
+                    "role": "system", 
+                    "content": "This is the start of this conversation. Greet to user based on the memory. Asking if user have new problem."
+                })
+        
+        if dialogues:
+            prompt.append({
+                "role": "system", 
+                "content": "Following contents are conversation happening now:"
+            })
+            prompt += dialogues
     except Exception as e:
         raise https_fn.HttpsError(code=https_fn.FunctionsErrorCode.INVALID_ARGUMENT,
                                   message=('Something wrong with the prompt.'),
@@ -107,7 +121,7 @@ def bruno_completion(req: https_fn.CallableRequest) -> any:
     try:
         id = req.data["user_id"]
         dialogues = req.data["dialogues"]
-        summary = db.collection('users').document(f'user_{id}').get().get('summary')
+        summary = db.collection('users').document(f'user_{id}').get().get('summary')  #Todo: get only latest summary from sparky
 
         if not isinstance(dialogues, list):
             raise ValueError("dialogues must be a list")
@@ -141,10 +155,12 @@ def bruno_completion(req: https_fn.CallableRequest) -> any:
 @https_fn.on_call(secrets=["OPENAI_APIKEY"])
 def update_summary(req: https_fn.CallableRequest) -> any:
     client = OpenAI(api_key=os.environ.get("OPENAI_APIKEY"))
-    user_id = 0
     dialogues = req.data["dialogues"]
+    #sparkyId = req.data["sparkyId"]
+    action = req.data["action"]
     prompt = [
-        {'role': 'system', 'content': 'Please summarize the above conversation in 100 words or less.'},
+        #Todo: Detailed summary prompt for remembering agents user met before.
+        {'role': 'system', 'content': f'Please summarize the above conversation in 100 words or less. Notice that you have already done the {action} action, and user had already talk to it. Please summary it into it also.'}, 
     ]
     try:
         response = client.chat.completions.create(
@@ -152,7 +168,7 @@ def update_summary(req: https_fn.CallableRequest) -> any:
             messages=dialogues + prompt,
         )
         message = response.choices[0].message.content
-        #db.collection("users").document(f'user_{user_id}').update({"summary": message})
+        db.collection("sparky").document("sparky_01").update({"summary" : firestore.ArrayUnion([message])})
         return message
     
     except Exception as e:

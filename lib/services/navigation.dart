@@ -1,3 +1,4 @@
+import 'package:fauna/views/chat_page/bizy/bizy_chat_page.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -12,6 +13,7 @@ class AppRoutes {
   static const String login = '/';
   static const String home = '/home';
   static const String sparky = '/sparky';
+  static const String bizy = '/bizy';
 }
 
 final routerConfig = GoRouter(
@@ -35,6 +37,9 @@ final routerConfig = GoRouter(
           GoRoute(
               path: AppRoutes.sparky,
               builder: (context, state) => SparkyChatPage()),
+          GoRoute(
+              path: AppRoutes.bizy,
+              builder: (context, state) => BizyChatPage()),
         ]),
   ],
   initialLocation: AppRoutes.login,
@@ -66,6 +71,10 @@ class NavigationService {
 
   void goSparky() {
     _router.go('/sparky');
+  }
+
+  void goBizy() {
+    _router.go('/bizy');
   }
 
   void pop(BuildContext context) {
