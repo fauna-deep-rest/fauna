@@ -13,7 +13,8 @@ from firebase_functions import firestore_fn, https_fn
 from firebase_admin import initialize_app, credentials, firestore
 import sparky_prompt, bizy_prompt, bruno_prompt
 
-cred = credentials.Certificate("fauna-ed8b5-firebase-adminsdk-h5itr-dcc0f3f786.json") # todo: put certufication key here
+
+cred = credentials.Certificate("") # todo: put certufication key here
 initialize_app(cred)
 db = firestore.client()
 
@@ -119,9 +120,9 @@ def bruno_completion(req: https_fn.CallableRequest) -> any:
     client = OpenAI(api_key=os.environ.get("OPENAI_APIKEY"))
 
     try:
-        id = req.data["user_id"]
+        id = req.data["bruno_id"]
         dialogues = req.data["dialogues"]
-        summary = db.collection('users').document(f'user_{id}').get().get('summary')  #Todo: get only latest summary from sparky
+        #Todo: get only latest summary from sparky
 
         if not isinstance(dialogues, list):
             raise ValueError("dialogues must be a list")
@@ -129,7 +130,7 @@ def bruno_completion(req: https_fn.CallableRequest) -> any:
             raise ValueError("user_id cannot be empty")
 
         prompt = bruno_prompt.get_prompt()
-        prompt.append({"role":"assistant", "content":"please consider this SUMMARY for the user: " + summary})
+        # prompt.append({"role":"assistant", "content":"please consider this SUMMARY for the user: " + summary})
         prompt += dialogues
 
     except Exception as e:

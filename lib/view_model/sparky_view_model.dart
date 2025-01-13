@@ -12,6 +12,7 @@ class SparkyViewModel with ChangeNotifier {
   String sparkyOutput = '';
   List<Map<String, String>> _dialogues = [];
   bool showBizyButton = false;
+  bool showBrunoButton = false;
 
   Future<void> createSparky(String sparkyId) async {
     await _repository.createSparky(sparkyId);
@@ -68,6 +69,7 @@ class SparkyViewModel with ChangeNotifier {
 
       if (response.data['action'] == 'guide_to_bruno') {
         //Provider.of<NavigationService>(context, listen: false).goBruno();
+        showBrunoButton = true;
       } else if (response.data['action'] == 'guide_to_bizy') {
         final summary = await FirebaseFunctions.instance
             .httpsCallable('update_summary')

@@ -52,4 +52,16 @@ firebase-debug.log
 functions/*.json       
 functions/venv/         
 functions/__pycache__/  
-*.pyc    
+*.pyc
+
+# Pub package lock file
+pubspec.lock
+
+# 其他常見的 Flutter/Dart 忽略項目
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+build/
+.pub/
+.pub-cache/

@@ -1,4 +1,5 @@
 import 'package:fauna/views/chat_page/bizy/bizy_chat_page.dart';
+import 'package:fauna/views/chat_page/bruno/bruno_chat_page.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -8,12 +9,14 @@ import 'package:fauna/views/homepage.dart';
 import 'package:fauna/views/chat_page/sparky_chat_page.dart';
 import 'package:fauna/view_model/sparky_view_model.dart';
 import 'package:fauna/view_model/user_view_model.dart';
+import 'package:fauna/view_model/bruno_view_model.dart';
 
 class AppRoutes {
   static const String login = '/';
   static const String home = '/home';
   static const String sparky = '/sparky';
   static const String bizy = '/bizy';
+  static const String bruno = '/bruno';
 }
 
 final routerConfig = GoRouter(
@@ -25,6 +28,7 @@ final routerConfig = GoRouter(
             providers: [
               ChangeNotifierProvider(create: (_) => AllUsersViewModel()),
               ChangeNotifierProvider(create: (_) => SparkyViewModel()),
+              ChangeNotifierProvider(create: (_) => BrunoViewModel()),
             ],
             child: child,
           );
@@ -40,6 +44,9 @@ final routerConfig = GoRouter(
           GoRoute(
               path: AppRoutes.bizy,
               builder: (context, state) => BizyChatPage()),
+          GoRoute(
+              path: AppRoutes.bruno,
+              builder: (context, state) => BrunoChatPage()),
         ]),
   ],
   initialLocation: AppRoutes.login,
@@ -75,6 +82,10 @@ class NavigationService {
 
   void goBizy() {
     _router.go('/bizy');
+  }
+
+  void goBruno() {
+    _router.go('/bruno');
   }
 
   void pop(BuildContext context) {

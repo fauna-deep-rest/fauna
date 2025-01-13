@@ -47,7 +47,7 @@ class _SparkyChatPageState extends State<SparkyChatPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: isLoading
-          ? Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator())
           : Container(
               decoration: const BoxDecoration(
                 image: DecorationImage(
@@ -134,6 +134,27 @@ class _SparkyChatPageState extends State<SparkyChatPage> {
                                 ),
                               ),
                               SizedBox(height: 16.0),
+                              if (sparkyViewModel.showBrunoButton)
+                                ElevatedButton(
+                                  onPressed: () {
+                                    Provider.of<NavigationService>(context,
+                                            listen: false)
+                                        .goBruno();
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.blue,
+                                    padding: EdgeInsets.symmetric(
+                                        horizontal: 24, vertical: 12),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                  ),
+                                  child: Text(
+                                    'Talk to Bruno',
+                                    style: TextStyle(
+                                        fontSize: 16, color: Colors.white),
+                                  ),
+                                ),
                               if (sparkyViewModel.showBizyButton)
                                 ElevatedButton(
                                   onPressed: () {

@@ -94,7 +94,9 @@ class _HomePageState extends State<HomePage> {
                                     listen: false)
                                 .goSparky();
                           } else if (_currentIndex == 1) {
-                            print("bruno");
+                            Provider.of<NavigationService>(context,
+                                    listen: false)
+                                .goBruno();
                           } else if (_currentIndex == 2) {
                             print("bizy");
                           }
