@@ -56,7 +56,7 @@ functions/__pycache__/
 
 # Pub package lock file
 pubspec.lock
-
+*.lock
 # 其他常見的 Flutter/Dart 忽略項目
 .dart_tool/
 .flutter-plugins

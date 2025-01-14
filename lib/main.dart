@@ -10,11 +10,17 @@ import 'package:provider/provider.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 
 void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  FirebaseFunctions.instance.useFunctionsEmulator('localhost', 5001);
+  try {
+    FirebaseFunctions.instance.useFunctionsEmulator('localhost', 5001);
+  } catch (e) {
+    print('Error setting up emulator: $e');
+  }
   runApp(MyApp());
 }
 
