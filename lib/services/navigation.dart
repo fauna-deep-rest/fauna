@@ -1,5 +1,6 @@
 import 'package:fauna/views/chat_page/bizy/bizy_chat_page.dart';
 import 'package:fauna/views/chat_page/bruno/bruno_chat_page.dart';
+import 'package:fauna/views/chat_page/bruno/nsdr_page.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -17,6 +18,7 @@ class AppRoutes {
   static const String sparky = '/sparky';
   static const String bizy = '/bizy';
   static const String bruno = '/bruno';
+  static const String nsdr = '/nsdr';
 }
 
 final routerConfig = GoRouter(
@@ -47,6 +49,8 @@ final routerConfig = GoRouter(
           GoRoute(
               path: AppRoutes.bruno,
               builder: (context, state) => BrunoChatPage()),
+          GoRoute(
+              path: AppRoutes.nsdr, builder: (context, state) => NSDRPage()),
         ]),
   ],
   initialLocation: AppRoutes.login,
@@ -86,6 +90,10 @@ class NavigationService {
 
   void goBruno() {
     _router.go('/bruno');
+  }
+
+  void goNSDR() {
+    _router.go('/nsdr');
   }
 
   void pop(BuildContext context) {

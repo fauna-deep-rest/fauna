@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:fauna/view_model/bruno_view_model.dart';
 import 'package:provider/provider.dart';
 import 'dart:async';
+import 'package:fauna/views/widgets/chat_widgets.dart'; // Import chat-related widgets
+import 'package:fauna/views/widgets/navigation_button.dart'; // Import NavigationButton
 
 class BrunoChatPage extends StatefulWidget {
   const BrunoChatPage({super.key});
@@ -21,6 +23,8 @@ class _BrunoChatPageState extends State<BrunoChatPage> {
   bool isGettingResponse = false;
   String output = "...";
   late TextEditingController _textController;
+
+  final NavigationService _navigationService = NavigationService();
 
   @override
   void initState() {
@@ -73,11 +77,21 @@ class _BrunoChatPageState extends State<BrunoChatPage> {
     });
   }
 
+  // Function to start meditation
+  void startMeditation() {
+    _navigationService.goNSDR(); // Navigate to NSDRPage
+  }
+
+  // Function to navigate back to the homepage
+  void goToHomePage() {
+    _navigationService.goHome(); // Navigate to HomePage
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const LoadingPage() // Use LoadingPage widget
           : Container(
               decoration: const BoxDecoration(
                 image: DecorationImage(
@@ -89,111 +103,67 @@ class _BrunoChatPageState extends State<BrunoChatPage> {
                 child: Column(
                   children: [
                     // Top navigation bar
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 16.0, vertical: 8.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          IconButton(
-                            icon: Icon(Icons.arrow_back, color: Colors.white),
-                            onPressed: () {},
-                          ),
-                          Text(
-                            "Bruno",
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          IconButton(
-                            icon: Icon(Icons.refresh, color: Colors.white),
-                            onPressed: () {},
-                          ),
-                        ],
-                      ),
+                    ChatTopBar(
+                      title: "Bruno",
+                      titleColor: Colors.white,
+                      iconColor: Colors.white,
+                      onBackPressed: () {
+                        // Handle back button press
+                        print('back pressed');
+                      },
+                      onHistoryPressed: () {
+                        // Handle history button press
+                        print('history pressed');
+                      },
                     ),
 
-                    // Sparky and speech bubble
+                    // Speech bubble
                     Expanded(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          // Speech bubble
                           Padding(
                             padding:
                                 const EdgeInsets.symmetric(horizontal: 16.0),
-                            child: Container(
-                              padding: EdgeInsets.all(16.0),
-                              decoration: BoxDecoration(
-                                color: Colors.black.withOpacity(0.7),
-                                borderRadius: BorderRadius.circular(16.0),
-                              ),
-                              child: Text(
-                                isGettingResponse
-                                    ? output
-                                    : brunoViewModel.brunoOutput,
-                                style: TextStyle(
-                                    color: Colors.white, fontSize: 16),
-                                textAlign: TextAlign.center,
-                              ),
+                            child: SpeechBubble(
+                              text: isGettingResponse
+                                  ? output
+                                  : brunoViewModel.brunoOutput,
+                              isGettingResponse: isGettingResponse,
                             ),
                           ),
-
                           SizedBox(height: 16.0),
-
-                          // Sparky image
-                          Container(
-                            width: 200,
-                            height: 200,
-                            child: Center(
-                              child: Image.asset(
-                                'assets/images/bruno/bruno.png', // Replace with the correct path to Sparky's image
-                                width: 200,
-                                height: 200,
-                              ),
-                            ),
+                          const BrunoImage(
+                            imagePath: 'assets/images/bruno/bruno.png',
+                            size: 200,
                           ),
-
                           SizedBox(height: 16.0),
+                          // Show start button if action is tutorial
+                          if (brunoViewModel.brunoAction == 'tutorial')
+                            NavigationButton(
+                              label: "開始",
+                              onPressed:
+                                  startMeditation, // Call startMeditation function
+                            ),
+                          if (brunoViewModel.brunoAction == 'concern')
+                            NavigationButton(
+                              label: "返回主頁",
+                              onPressed:
+                                  goToHomePage, // Call goToHomePage function
+                            ),
                         ],
                       ),
                     ),
 
                     // Chat input
-                    Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: TextField(
-                              decoration: InputDecoration(
-                                hintText: "Say something...",
-                                hintStyle: TextStyle(color: Colors.grey),
-                                filled: true,
-                                fillColor: Colors.grey[800],
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(30.0),
-                                  borderSide: BorderSide.none,
-                                ),
-                              ),
-                              style: TextStyle(color: Colors.white),
-                              controller: _textController,
-                              onSubmitted: _handleSubmit,
-                            ),
-                          ),
-                          SizedBox(width: 8.0),
-                          GestureDetector(
-                            onTap: () {},
-                            child: CircleAvatar(
-                              backgroundColor: Colors.grey[800],
-                              child: Icon(Icons.send, color: Colors.white),
-                            ),
-                          ),
-                        ],
+                    if (!isGettingResponse) // Only show input field if not getting response
+                      Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: InputField(
+                          controller: _textController,
+                          onSubmitted: _handleSubmit,
+                        ),
                       ),
-                    ),
                   ],
                 ),
               ),

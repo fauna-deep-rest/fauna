@@ -14,7 +14,7 @@ from firebase_admin import initialize_app, credentials, firestore
 import sparky_prompt, bizy_prompt, bruno_prompt
 
 
-cred = credentials.Certificate("fauna-ed8b5-firebase-adminsdk-h5itr-b46b7666c2.json") # todo: put certufication key here
+cred = credentials.Certificate("") # todo: put certufication key here
 initialize_app(cred)
 db = firestore.client()
 

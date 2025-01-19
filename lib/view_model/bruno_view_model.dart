@@ -14,6 +14,7 @@ class BrunoViewModel with ChangeNotifier {
 
   /// Latest output from Bruno AI
   String brunoOutput = '';
+  String brunoAction = '';
 
   /// List of conversation messages between user and Bruno
   List<Map<String, String>> _dialogues = [];
@@ -58,7 +59,8 @@ class BrunoViewModel with ChangeNotifier {
           .httpsCallable('bruno_completion')
           .call({"dialogues": _dialogues, "bruno_id": brunoId});
 
-      brunoOutput = response.data.toString();
+      brunoOutput = response.data['answer'];
+      brunoAction = response.data['action'];
       _dialogues.add({'role': 'assistant', 'content': brunoOutput});
     } catch (e) {
       print('Error loading data: $e');
@@ -81,8 +83,10 @@ class BrunoViewModel with ChangeNotifier {
       final response = await FirebaseFunctions.instance
           .httpsCallable('bruno_completion')
           .call({"dialogues": _dialogues, "bruno_id": id});
-      brunoOutput = response.data.toString();
-      _dialogues.add({'role': 'assistant', 'content': brunoOutput});
+      brunoOutput = response.data['answer'];
+      brunoAction = response.data['action'];
+      _dialogues
+          .add({'role': 'assistant', 'content': response.data.toString()});
       notifyListeners();
     } catch (e) {
       print('Error handling submission: $e');
