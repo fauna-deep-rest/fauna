@@ -1,6 +1,8 @@
 import 'package:fauna/services/navigation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:fauna/views/widgets/index.dart';
+import 'package:fauna/views/characters.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -12,31 +14,10 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   final PageController _pageController = PageController();
   int _currentIndex = 0;
+  final List<Map<String, String>> _characters = characters;
 
-  // 資料定義：角色與背景
-  final List<Map<String, String>> _characters = [
-    {
-      'name': 'Sparky',
-      'description': 'A friendly guide to provide helpful advice.',
-      'background': 'assets/images/backgrounds/bg_sparky.png',
-      'image': 'assets/images/sparky/sparky.png',
-    },
-    {
-      'name': 'Bruno',
-      'description': 'Meditation master.',
-      'background': 'assets/images/backgrounds/bg_bruno.png',
-      'image': 'assets/images/bruno/bruno.png',
-    },
-    {
-      'name': 'Bizy',
-      'description': 'An expert dealing with procrastination.',
-      'background': 'assets/images/backgrounds/bg_bizy.png',
-      'image': 'assets/images/bizy/bizy.png',
-    },
-  ];
-
+  // Handle arrow button press events
   void _onArrowPressed(int direction) {
-    // 計算新的頁面索引
     int newIndex = _currentIndex + direction;
     if (newIndex >= 0 && newIndex < _characters.length) {
       _pageController.animateToPage(
@@ -47,60 +28,61 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  // Update current index when page changes
+  void _onPageChanged(int index) {
+    setState(() {
+      _currentIndex = index;
+    });
+  }
+
+  // Handle character tap events
+  void _onCharacterTap() {
+    final navigationService =
+        Provider.of<NavigationService>(context, listen: false);
+    switch (_currentIndex) {
+      case 0:
+        navigationService.goSparky();
+        break;
+      case 1:
+        navigationService.goBruno();
+        break;
+      case 2:
+        print("bizy");
+        break;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Stack(
         children: [
-          // 背景與角色切換（PageView）
+          // Background and character switching (PageView)
           PageView.builder(
             controller: _pageController,
             itemCount: _characters.length,
-            onPageChanged: (index) {
-              setState(() {
-                _currentIndex = index;
-              });
-            },
+            onPageChanged: _onPageChanged,
             itemBuilder: (context, index) {
               final character = _characters[index];
               return Stack(
                 fit: StackFit.expand,
                 children: [
-                  // 背景圖片
+                  // Background image
                   Image.asset(
                     character['background']!,
                     fit: BoxFit.cover,
                   ),
-                  // 角色信息
+                  // Character information
                   Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text(
-                        character['name']!,
-                        style: const TextStyle(
-                            fontSize: 24, fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        character['description']!,
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(fontSize: 16),
+                      Introduction(
+                        name: character['name']!,
+                        description: character['description']!,
                       ),
                       const SizedBox(height: 16),
                       GestureDetector(
-                        onTap: () {
-                          if (_currentIndex == 0) {
-                            Provider.of<NavigationService>(context,
-                                    listen: false)
-                                .goSparky();
-                          } else if (_currentIndex == 1) {
-                            Provider.of<NavigationService>(context,
-                                    listen: false)
-                                .goBruno();
-                          } else if (_currentIndex == 2) {
-                            print("bizy");
-                          }
-                        },
+                        onTap: _onCharacterTap,
                         child: Image.asset(
                           character['image']!,
                           height: 200,
@@ -113,25 +95,27 @@ class _HomePageState extends State<HomePage> {
             },
           ),
 
-          // 固定的前景按鈕
+          // Fixed foreground buttons
           Positioned(
             left: 16,
             top: MediaQuery.of(context).size.height / 2 - 24,
-            child: IconButton(
-              icon: const Icon(Icons.arrow_back, size: 32),
-              onPressed: () => _onArrowPressed(-1), // 左滑動
+            child: NavigationArrowButton(
+              icon: Icons.arrow_back,
+              onPressed: () => _onArrowPressed(-1),
+              iconColor: Colors.white,
             ),
           ),
           Positioned(
             right: 16,
             top: MediaQuery.of(context).size.height / 2 - 24,
-            child: IconButton(
-              icon: const Icon(Icons.arrow_forward, size: 32),
-              onPressed: () => _onArrowPressed(1), // 右滑動
+            child: NavigationArrowButton(
+              icon: Icons.arrow_forward,
+              onPressed: () => _onArrowPressed(1),
+              iconColor: Colors.white,
             ),
           ),
 
-          // 固定底部按鈕
+          // Fixed bottom buttons
           Positioned(
             bottom: 32,
             left: 0,
@@ -139,17 +123,17 @@ class _HomePageState extends State<HomePage> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                ElevatedButton(
+                MenuButton(
+                  label: 'Diary',
                   onPressed: () {
                     print("Diary button pressed");
                   },
-                  child: const Text('Diary'),
                 ),
-                ElevatedButton(
+                MenuButton(
+                  label: 'Map',
                   onPressed: () {
                     print("Map button pressed");
                   },
-                  child: const Text('Map'),
                 ),
               ],
             ),
