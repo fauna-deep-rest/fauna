@@ -14,7 +14,7 @@ from firebase_admin import initialize_app, credentials, firestore
 import sparky_prompt, bizy_prompt, bruno_prompt
 
 
-cred = credentials.Certificate("") # todo: put certufication key here
+cred = credentials.Certificate("fauna-ed8b5-firebase-adminsdk-h5itr-dcc0f3f786.json") # todo: put certufication key here
 initialize_app(cred)
 db = firestore.client()
 
@@ -73,27 +73,90 @@ def sparky_completion(req: https_fn.CallableRequest) -> any:
         raise https_fn.HttpsError(code=https_fn.FunctionsErrorCode.UNKNOWN,
                                   message="Error",
                                   details=e)
-    
-@https_fn.on_call(secrets=["OPENAI_APIKEY"])
-def bizy_completion(req: https_fn.CallableRequest) -> any:
+
+# todo: consider procrastination type
+# todo: seperate to main, tasky, analy completion
+@https_fn.on_call(secrets=["OPENAI_APIKEY"]) 
+def bizy_main_completion(req: https_fn.CallableRequest) -> any:
     client = OpenAI(api_key=os.environ.get("OPENAI_APIKEY"))
     try:
         id = req.data["user_id"]
         dialogues = req.data["dialogues"]
         bizy_type = req.data["bizy_type"]
-        summary = db.collection('users').document(f'user_{id}').get().get('summary')
+        summary = db.collection('sparky').document(f"sparky_{id}").get().get('summary')
+        latest_summary = summary[-1] if summary else None
 
         prompt = bizy_prompt.get_prompt(bizy_type)
-        prompt.append({"role":"assistant", "content":"please consider this SUMMARY for the user: " + summary})
+        if latest_summary:
+            prompt.append({"role":"assistant", "content":"please consider this SUMMARY for the user: " + latest_summary})  # 如果user是直接點選bizy的？
         prompt += dialogues
 
-        if bizy_type == 'bizy_analysis':
-            prompt.append({'role': 'assistant', 'content': "You've been changed to little bee who responsible for analysis."})
-        elif bizy_type == 'bizy_main':
-            prompt.append({'role': 'assistant', 'content': "You've been changed to the leader of a group of bees that help users manage procrastination and time."})
+        prompt.append({'role': 'assistant', 'content': "You are the leader of a group of bees that help users manage procrastination and time."})
 
-        
-        
+    except Exception as e:
+        raise https_fn.HttpsError(code=https_fn.FunctionsErrorCode.INVALID_ARGUMENT,
+                                  message=('Something wrong with the bizy prompt.'),
+                                  details=e)
+
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=prompt,
+            response_format=bizy_prompt.get_response_schema(bizy_type)
+        )
+        message = response.choices[0].message.content
+        message = json.loads(message)
+
+        return message
+    
+    except Exception as e:
+        raise https_fn.HttpsError(code=https_fn.FunctionsErrorCode.UNKNOWN,
+                                  message="Error",
+                                  details=e)
+
+@https_fn.on_call(secrets=["OPENAI_APIKEY"]) 
+def bizy_analysis_completion(req: https_fn.CallableRequest) -> any:
+    client = OpenAI(api_key=os.environ.get("OPENAI_APIKEY"))
+    try:
+        id = req.data["user_id"]
+        dialogues = req.data["dialogues"]
+        bizy_type = req.data["bizy_type"]
+        prompt = bizy_prompt.get_prompt(bizy_type)
+        prompt += dialogues
+        prompt.append({'role': 'assistant', 'content': "You are changed to little bee who responsible for analysis."})
+
+    except Exception as e:
+        raise https_fn.HttpsError(code=https_fn.FunctionsErrorCode.INVALID_ARGUMENT,
+                                  message=('Something wrong with the bizy prompt.'),
+                                  details=e)
+
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=prompt,
+            response_format=bizy_prompt.get_response_schema(bizy_type)
+        )
+        message = response.choices[0].message.content
+        message = json.loads(message)
+
+        return message
+    
+    except Exception as e:
+        raise https_fn.HttpsError(code=https_fn.FunctionsErrorCode.UNKNOWN,
+                                  message="Error",
+                                  details=e)
+
+@https_fn.on_call(secrets=["OPENAI_APIKEY"]) 
+def bizy_task_completion(req: https_fn.CallableRequest) -> any:
+    client = OpenAI(api_key=os.environ.get("OPENAI_APIKEY"))
+    try:
+        id = req.data["user_id"]
+        dialogues = req.data["dialogues"]
+        bizy_type = req.data["bizy_type"]
+        prompt = bizy_prompt.get_prompt(bizy_type)
+        prompt += dialogues
+        prompt.append({'role': 'assistant', 'content': "You are changed to little bee who responsible for breaking task."})
+
     except Exception as e:
         raise https_fn.HttpsError(code=https_fn.FunctionsErrorCode.INVALID_ARGUMENT,
                                   message=('Something wrong with the bizy prompt.'),
@@ -160,7 +223,7 @@ def update_summary(req: https_fn.CallableRequest) -> any:
     #sparkyId = req.data["sparkyId"]
     action = req.data["action"]
     prompt = [
-        #Todo: Detailed summary prompt for remembering agents user met before.
+        #todo: Detailed summary prompt for remembering agents user met before.
         {'role': 'system', 'content': f'Please summarize the above conversation in 100 words or less. Notice that you have already done the {action} action, and user had already talk to it. Please summary it into it also.'}, 
     ]
     try:

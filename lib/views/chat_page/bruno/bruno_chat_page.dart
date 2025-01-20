@@ -22,20 +22,17 @@ class _BrunoChatPageState extends State<BrunoChatPage> {
   bool isLoading = false;
   bool isGettingResponse = false;
   String output = "...";
-  late TextEditingController _textController;
 
   final NavigationService _navigationService = NavigationService();
 
   @override
   void initState() {
     super.initState();
-    _textController = TextEditingController();
     _loadData();
   }
 
   @override
   void dispose() {
-    _textController.dispose();
     super.dispose();
   }
 
@@ -51,7 +48,6 @@ class _BrunoChatPageState extends State<BrunoChatPage> {
 
   Future<void> _handleSubmit(String text) async {
     if (text.trim().isEmpty) return;
-    _textController.clear();
     setState(() {
       isGettingResponse = true;
     });
@@ -160,7 +156,6 @@ class _BrunoChatPageState extends State<BrunoChatPage> {
                       Padding(
                         padding: const EdgeInsets.all(16.0),
                         child: InputField(
-                          controller: _textController,
                           onSubmitted: _handleSubmit,
                         ),
                       ),

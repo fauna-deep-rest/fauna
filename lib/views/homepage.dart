@@ -47,7 +47,7 @@ class _HomePageState extends State<HomePage> {
         navigationService.goBruno();
         break;
       case 2:
-        print("bizy");
+        navigationService.goBizy();
         break;
     }
   }

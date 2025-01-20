@@ -11,6 +11,7 @@ import 'package:fauna/views/chat_page/sparky_chat_page.dart';
 import 'package:fauna/view_model/sparky_view_model.dart';
 import 'package:fauna/view_model/user_view_model.dart';
 import 'package:fauna/view_model/bruno_view_model.dart';
+import 'package:fauna/view_model/bizy_view_model.dart';
 
 class AppRoutes {
   static const String login = '/';
@@ -31,6 +32,7 @@ final routerConfig = GoRouter(
               ChangeNotifierProvider(create: (_) => AllUsersViewModel()),
               ChangeNotifierProvider(create: (_) => SparkyViewModel()),
               ChangeNotifierProvider(create: (_) => BrunoViewModel()),
+              ChangeNotifierProvider(create: (_) => BizyViewModel()),
             ],
             child: child,
           );

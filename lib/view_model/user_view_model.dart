@@ -29,9 +29,11 @@ class AllUsersViewModel with ChangeNotifier {
     return null;
   }
 
-  Future<void> addUser(String userId, String name, String sparkyId) async {
+  Future<void> addUser(String userId, String name, String sparkyId,
+      String brunoId, String bizyId) async {
     try {
-      final newUser = await _userRepository.addUser(userId, name, sparkyId);
+      final newUser = await _userRepository.addUser(
+          userId, name, sparkyId, brunoId, bizyId);
       currentUser = newUser;
       print("Set current user in addUser");
     } catch (e) {

@@ -1,123 +1,163 @@
+import 'package:fauna/services/navigation.dart';
+import 'package:fauna/view_model/user_view_model.dart';
 import 'package:flutter/material.dart';
+import 'package:fauna/view_model/bizy_view_model.dart';
+import 'package:provider/provider.dart';
+import 'dart:async';
+import 'package:fauna/views/widgets/chat_widgets.dart';
 
-class BizyChatPage extends StatelessWidget {
+class BizyChatPage extends StatefulWidget {
   @override
+  _BizyChatPageState createState() => _BizyChatPageState();
+}
+
+class _BizyChatPageState extends State<BizyChatPage> {
+  late BizyViewModel bizyViewModel;
+  late AllUsersViewModel userViewModel;
+  bool isLoading = false;
+  bool isGettingResponse = false;
+  String output = "...";
+
+  @override
+  void initState() {
+    super.initState();
+    bizyViewModel = Provider.of<BizyViewModel>(context, listen: false);
+    userViewModel = Provider.of<AllUsersViewModel>(context, listen: false);
+    _loadData();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+  }
+
+  Future<void> _loadData() async {
+    setState(() {
+      isLoading = true;
+    });
+    await bizyViewModel.loadData("bizy_01");
+    setState(() {
+      isLoading = false;
+    });
+  }
+
+  Future<void> _handleSubmit(String text) async {
+    print("submitting!");
+    setState(() {
+      isGettingResponse = true;
+    });
+
+    Timer.periodic(Duration(milliseconds: 500), (timer) {
+      if (!mounted) {
+        timer.cancel();
+        return;
+      }
+      setState(() {
+        if (output == "...") {
+          output = ".";
+        } else {
+          output += ".";
+        }
+      });
+    });
+
+    await bizyViewModel.handleSubmit(text, "01", context);
+
+    setState(() {
+      isGettingResponse = false;
+    });
+  }
+
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage('assets/images/backgrounds/bg_bizy.png'),
-            fit: BoxFit.cover,
-          ),
-        ),
-        child: SafeArea(
-          child: Column(
-            children: [
-              // Top navigation bar
-              Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    IconButton(
-                      icon: Icon(Icons.arrow_back, color: Colors.white),
-                      onPressed: () {},
-                    ),
-                    Text(
-                      "Bizy",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    IconButton(
-                      icon: Icon(Icons.refresh, color: Colors.white),
-                      onPressed: () {},
-                    ),
-                  ],
+      body: isLoading
+          ? const LoadingPage()
+          : Container(
+              decoration: const BoxDecoration(
+                image: DecorationImage(
+                  image: AssetImage('assets/images/backgrounds/bg_bizy.png'),
+                  fit: BoxFit.cover,
                 ),
               ),
-
-              // Sparky and speech bubble
-              Expanded(
+              child: SafeArea(
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    // Speech bubble
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                      child: Container(
-                        padding: EdgeInsets.all(16.0),
-                        decoration: BoxDecoration(
-                          color: Colors.black.withOpacity(0.7),
-                          borderRadius: BorderRadius.circular(16.0),
-                        ),
-                        child: Text(
-                          "Hi, I am Sparky. How's everything going? I'm willing to help you!",
-                          style: TextStyle(color: Colors.white, fontSize: 16),
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
+                    ChatTopBar(
+                      title: "Bizy",
+                      titleColor: Colors.white,
+                      iconColor: Colors.white,
+                      onBackPressed: () {
+                        // Handle back button press
+                        print('back pressed');
+                      },
+                      onHistoryPressed: () {
+                        // Handle history button press
+                        print('history pressed');
+                      },
                     ),
 
-                    SizedBox(height: 16.0),
-
-                    // Sparky image
-                    Container(
-                      width: 200,
-                      height: 200,
-                      child: Center(
-                        child: Image.asset(
-                          'assets/images/bizy/bizy.png', // Replace with the correct path to Sparky's image
-                          width: 100,
-                          height: 100,
-                        ),
-                      ),
-                    ),
-
-                    SizedBox(height: 16.0),
-                  ],
-                ),
-              ),
-
-              // Chat input
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Row(
-                  children: [
+                    // Bizy and speech bubble
                     Expanded(
-                      child: TextField(
-                        decoration: InputDecoration(
-                          hintText: "Say something...",
-                          hintStyle: TextStyle(color: Colors.grey),
-                          filled: true,
-                          fillColor: Colors.grey[800],
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(30.0),
-                            borderSide: BorderSide.none,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          // Speech bubble
+                          SpeechBubble(
+                            text: bizyViewModel.bizyType == 'bizy_main' &&
+                                    isGettingResponse
+                                ? output
+                                : bizyViewModel.bizyOutput,
+                            isGettingResponse:
+                                bizyViewModel.bizyType == 'bizy_main' &&
+                                    isGettingResponse,
                           ),
-                        ),
-                        style: TextStyle(color: Colors.white),
+
+                          SizedBox(height: 16.0),
+
+                          // Bizy image
+                          Column(
+                            children: [
+                              const BizyImage(
+                                imagePath: 'assets/images/bizy/bizy.png',
+                                size: 200,
+                              ),
+                              const SizedBox(height: 16.0),
+                              if (bizyViewModel.showSmallBizy) ...[
+                                Text(
+                                  "Planbee",
+                                  style: TextStyle(
+                                    color: Colors.black,
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                SpeechBubble(
+                                  text: bizyViewModel.bizyType != 'bizy_main' &&
+                                          isGettingResponse
+                                      ? output
+                                      : bizyViewModel.smallBizyOutput,
+                                  isGettingResponse:
+                                      bizyViewModel.bizyType != 'bizy_main' &&
+                                          isGettingResponse,
+                                ),
+                              ]
+                            ],
+                          ),
+                        ],
                       ),
                     ),
-                    SizedBox(width: 8.0),
-                    GestureDetector(
-                      onTap: () {},
-                      child: CircleAvatar(
-                        backgroundColor: Colors.grey[800],
-                        child: Icon(Icons.send, color: Colors.white),
+
+                    // Chat input
+                    Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: InputField(
+                        onSubmitted: _handleSubmit,
                       ),
                     ),
                   ],
                 ),
               ),
-            ],
-          ),
-        ),
-      ),
+            ),
     );
   }
 }

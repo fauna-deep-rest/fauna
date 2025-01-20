@@ -19,7 +19,6 @@ class _SparkyChatPageState extends State<SparkyChatPage> {
   bool isLoading = false;
   bool isGettingResponse = false;
   String output = "...";
-  final TextEditingController _textController = TextEditingController();
 
   @override
   void initState() {
@@ -29,7 +28,6 @@ class _SparkyChatPageState extends State<SparkyChatPage> {
 
   @override
   void dispose() {
-    _textController.dispose();
     super.dispose();
   }
 
@@ -154,7 +152,6 @@ class _SparkyChatPageState extends State<SparkyChatPage> {
                     Padding(
                       padding: const EdgeInsets.all(16.0),
                       child: InputField(
-                        controller: _textController,
                         onSubmitted: _handleSubmit,
                       ),
                     ),

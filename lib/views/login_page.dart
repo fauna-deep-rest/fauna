@@ -1,3 +1,5 @@
+import 'package:fauna/view_model/bizy_view_model.dart';
+import 'package:fauna/view_model/bruno_view_model.dart';
 import 'package:flutter/material.dart';
 //import 'package:firebase_auth/firebase_auth.dart';
 import 'package:provider/provider.dart';
@@ -28,13 +30,22 @@ class _LoginPageState extends State<LoginPage> {
           Provider.of<AllUsersViewModel>(context, listen: false);
       final sparkyViewModel =
           Provider.of<SparkyViewModel>(context, listen: false);
+      final bizyViewModel = Provider.of<BizyViewModel>(context, listen: false);
+      final brunoViewModel =
+          Provider.of<BrunoViewModel>(context, listen: false);
       final user = await userViewModel
           .getUserById(userId); // If user exists, current user will be set here
 
       if (user == null) {
         await sparkyViewModel.createSparky('sparky_$userId');
-        await userViewModel.addUser(userId, "Test User $userId",
-            "sparky_$userId"); // If user not exists, current user will be set here
+        await bizyViewModel.createBizy('bizy_$userId');
+        await brunoViewModel.createBruno('bruno_$userId');
+        await userViewModel.addUser(
+            userId,
+            "Test User $userId",
+            "sparky_$userId",
+            'bruno_$userId',
+            "bizy_$userId"); // If user not exists, current user will be set here
         print("create new user $userId");
       }
 

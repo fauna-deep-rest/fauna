@@ -1,15 +1,31 @@
 import 'package:flutter/material.dart';
 
-// InputField Widget
-class InputField extends StatelessWidget {
-  final TextEditingController controller; // Text editing controller
+class InputField extends StatefulWidget {
   final Function(String) onSubmitted; // Callback for text submission
 
   const InputField({
     Key? key,
-    required this.controller,
     required this.onSubmitted,
   }) : super(key: key);
+
+  @override
+  _InputFieldState createState() => _InputFieldState();
+}
+
+class _InputFieldState extends State<InputField> {
+  late TextEditingController controller; // Declare the controller
+
+  @override
+  void initState() {
+    super.initState();
+    controller = TextEditingController(); // Initialize the controller
+  }
+
+  @override
+  void dispose() {
+    controller.dispose(); // Dispose of the controller to free resources
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -30,8 +46,14 @@ class InputField extends StatelessWidget {
                 ),
               ),
               style: TextStyle(color: Colors.white),
-              controller: controller, // Use the provided controller
-              onSubmitted: onSubmitted, // Use the provided callback
+              controller: controller, // Use the controller
+              onSubmitted: (String value) {
+                if (controller.text.isNotEmpty) {
+                  widget.onSubmitted(
+                      controller.text); // Call the onSubmitted callback
+                  controller.clear(); // Clear the text field
+                }
+              },
             ),
           ),
           SizedBox(width: 8.0),
@@ -39,7 +61,8 @@ class InputField extends StatelessWidget {
             onTap: () {
               // Handle send button tap
               if (controller.text.isNotEmpty) {
-                onSubmitted(controller.text); // Call the onSubmitted callback
+                widget.onSubmitted(
+                    controller.text); // Call the onSubmitted callback
                 controller.clear(); // Clear the text field
               }
             },

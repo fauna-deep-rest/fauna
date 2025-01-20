@@ -5,3 +5,4 @@ export 'sparky_image.dart'; // Export SparkyImage widget
 export 'navigation_button.dart'; // Export NavigationButton widget
 export 'input_field.dart'; // Export InputField widget
 export 'bruno_image.dart'; // Export BrunoImage widget
+export 'bizy_image.dart';

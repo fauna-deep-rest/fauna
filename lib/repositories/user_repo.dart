@@ -5,12 +5,13 @@ class UserRepository {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
   final timeout = const Duration(seconds: 10);
 
-  Future<User> addUser(String userId, String name, String sparkyId) async {
+  Future<User> addUser(String userId, String name, String sparkyId,
+      String brunoId, String bizyId) async {
     Map<String, dynamic> userMap = {
       'name': name,
       'sparkyId': sparkyId,
-      'brunoId': "",
-      'bizyId': ""
+      'brunoId': brunoId,
+      'bizyId': bizyId,
     };
     await _db
         .collection('users')
