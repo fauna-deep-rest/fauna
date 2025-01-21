@@ -51,3 +51,64 @@ class Bizy with ChangeNotifier {
     notifyListeners();
   }
 }
+
+class Step {
+  final int step;
+  final String task;
+
+  Step({required this.step, required this.task});
+
+  factory Step.fromMap(Map<String, dynamic> map) {
+    return Step(
+      step: map['step'] ?? 0,
+      task: map['task'] ?? '',
+    );
+  }
+
+  @override
+  String toString() {
+    return 'Step $step: $task';
+  }
+}
+
+class BizyResponse {
+  final String answer;
+  final String action;
+  final List<Step> steps;
+
+  BizyResponse({
+    required this.answer,
+    required this.action,
+    this.steps = const [],
+  });
+
+  factory BizyResponse.fromMap(Map<String, dynamic> map) {
+    var stepsList =
+        (map['steps'] as List?)?.map((item) => Step.fromMap(item)).toList() ??
+            [];
+
+    return BizyResponse(
+      answer: map['answer'] ?? '',
+      action: map['action'] ?? '',
+      steps: stepsList,
+    );
+  }
+}
+
+class DialogueMessage {
+  final String role;
+  final String content;
+  final DateTime timestamp;
+
+  DialogueMessage({
+    required this.role,
+    required this.content,
+    DateTime? timestamp,
+  }) : timestamp = timestamp ?? DateTime.now();
+
+  Map<String, dynamic> toMap() => {
+        'role': role,
+        'content': content,
+        'timestamp': timestamp.toIso8601String(),
+      };
+}

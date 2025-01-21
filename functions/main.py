@@ -178,6 +178,38 @@ def bizy_task_completion(req: https_fn.CallableRequest) -> any:
                                   message="Error",
                                   details=e)
     
+@https_fn.on_call(secrets=["OPENAI_APIKEY"]) 
+def bizy_excuse_completion(req: https_fn.CallableRequest) -> any:
+    client = OpenAI(api_key=os.environ.get("OPENAI_APIKEY"))
+    try:
+        id = req.data["user_id"]
+        dialogues = req.data["dialogues"]
+        bizy_type = req.data["bizy_type"]
+        prompt = bizy_prompt.get_prompt(bizy_type)
+        prompt += dialogues
+        prompt.append({'role': 'assistant', 'content': "You are changed to little bee who responsible for changing excuse."})
+
+    except Exception as e:
+        raise https_fn.HttpsError(code=https_fn.FunctionsErrorCode.INVALID_ARGUMENT,
+                                  message=('Something wrong with the bizy prompt.'),
+                                  details=e)
+
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=prompt,
+            response_format=bizy_prompt.get_response_schema(bizy_type)
+        )
+        message = response.choices[0].message.content
+        message = json.loads(message)
+
+        return message
+    
+    except Exception as e:
+        raise https_fn.HttpsError(code=https_fn.FunctionsErrorCode.UNKNOWN,
+                                  message="Error",
+                                  details=e)
+    
 @https_fn.on_call(secrets=["OPENAI_APIKEY"])
 def bruno_completion(req: https_fn.CallableRequest) -> any:
     client = OpenAI(api_key=os.environ.get("OPENAI_APIKEY"))

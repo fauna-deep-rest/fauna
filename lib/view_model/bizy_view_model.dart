@@ -8,8 +8,8 @@ import '../models/bizy.dart';
 class BizyViewModel with ChangeNotifier {
   Bizy? bizy;
   final BizyRepository _repository = BizyRepository();
-
-  List<Map<String, String>> _dialogues = [];
+  //Todo: dialogues message class
+  List<DialogueMessage> _dialogues = [];
   String bizyType = 'bizy_main';
 
   String bizyOutput = '';
@@ -18,11 +18,6 @@ class BizyViewModel with ChangeNotifier {
 
   Future<void> createBizy(String bizyId) async {
     await _repository.createBizy(bizyId);
-  }
-
-  Future<Bizy?> loadBizy(String bizyId) async {
-    bizy = await _repository.fetchBizy(bizyId);
-    return bizy;
   }
 
   Future<void> addSummary(String newSummary) async {
@@ -41,14 +36,7 @@ class BizyViewModel with ChangeNotifier {
     }
   }
 
-  Future<void> setProcrastinationType(String type) async {
-    if (bizy != null) {
-      bizy!.setProcrastinationType(type);
-      await _repository.setProcrastinationType(bizy!.id, type);
-      notifyListeners();
-    }
-  }
-
+  // Initialize function to get bizy info
   Future<void> loadData(String id) async {
     try {
       bizy = await _repository.fetchBizy("bizy_$id");
@@ -57,9 +45,8 @@ class BizyViewModel with ChangeNotifier {
     }
     try {
       var response = await getResponse(_dialogues, id, bizyType);
-
       bizyOutput = response.answer;
-      _dialogues.add({'role': 'assistant', 'content': bizyOutput});
+      _dialogues.add(DialogueMessage(role: 'assistant', content: bizyOutput));
     } catch (e) {
       print('Error loading prompt: $e');
     } finally {
@@ -68,128 +55,134 @@ class BizyViewModel with ChangeNotifier {
     }
   }
 
-  // todo: update type
+  /// Update BizyType based on action from response. show small speech bubble when switch to small bees.
+  void updateBizyType(String action) {
+    switch (action) {
+      case 'analysis':
+        bizyType = 'bizy_analysis';
+        break;
+      case 'break_task':
+        bizyType = 'bizy_task';
+        break;
+      case 'excuse':
+        bizyType = 'bizy_excuse';
+        break;
+      case 'finish_analysis':
+        bizyType = 'bizy_main';
+        break;
+      case 'set_next_action':
+        bizyType = 'bizy_main';
+        break;
+      case 'change_excuse':
+        bizyType = 'bizy_main';
+        break;
+      default:
+        print("No action matched. Current bizyType remains: $bizyType");
+        break;
+    }
+  }
 
+  /// Handle actions that main Bizy call small bees.
+  Future<void> callBees(String action, String id) async {
+    if (action == 'analysis') {
+      updateBizyType(action);
+      showSmallBizy = true;
+      await updateOutput(id);
+    } else if (action == 'break_task') {
+      updateBizyType(action);
+      showSmallBizy = true;
+
+      var taskResponse = await updateOutput(id);
+      if (taskResponse.action == "break_down_tasks") {
+        for (var step in taskResponse.steps) {
+          _dialogues.add(
+              DialogueMessage(role: 'assistant', content: step.toString()));
+        }
+      }
+    } else if (action == 'change_excuse') {
+      updateBizyType(action);
+      showSmallBizy = true;
+      await updateOutput(id);
+    } else {
+      return;
+    }
+  }
+
+  /// Update output based on bizyType
+  Future<BizyResponse> updateOutput(String id) async {
+    BizyResponse response = await getResponse(_dialogues, id, bizyType);
+
+    if (bizyType == 'bizy_main') {
+      bizyOutput = response.action + response.answer;
+      _dialogues.add(DialogueMessage(role: 'assistant', content: bizyOutput));
+    } else {
+      smallBizyOutput = response.action + response.answer;
+      _dialogues
+          .add(DialogueMessage(role: 'assistant', content: smallBizyOutput));
+    }
+
+    return response;
+  }
+
+  /// Logic for Bizy to handle user's input
   Future<void> handleSubmit(
       String prompt, String id, BuildContext context) async {
     if (prompt.trim().isEmpty) return;
-    _dialogues.add({'role': 'user', 'content': prompt});
-
+    _dialogues.add(DialogueMessage(role: 'user', content: prompt));
     try {
       if (bizyType == "bizy_main") {
-        var response = await getResponse(_dialogues, id, bizyType);
-        bizyOutput = response.action + response.answer;
         showSmallBizy = false;
-        _dialogues.add({'role': 'assistant', 'content': bizyOutput});
 
-        if (response.action == 'analysis') {
-          bizyType = 'bizy_analysis';
-          var analysisResponse = await getResponse(_dialogues, id, bizyType);
-          smallBizyOutput = analysisResponse.answer;
-
-          showSmallBizy = true;
-          _dialogues.add({'role': 'assistant', 'content': smallBizyOutput});
-        }
-        if (response.action == 'break_task') {
-          bizyType = 'bizy_task';
-          showSmallBizy = true;
-
-          var taskyResponse = await getResponse(_dialogues, id, bizyType);
-          smallBizyOutput = taskyResponse.answer;
-          _dialogues.add({'role': 'assistant', 'content': smallBizyOutput});
-        }
-        if (response.action == 'change_excuse') {
-          print("change_excuse");
-        }
+        BizyResponse response = await updateOutput(id);
+        await callBees(response.action, id);
         if (response.action == 'summary') {
           // todo: save after conversation
         }
       } else if (bizyType == "bizy_analysis") {
-        var analysisResponse = await getResponse(_dialogues, id, bizyType);
-        smallBizyOutput =
-            analysisResponse.answer + " " + analysisResponse.action;
-        _dialogues.add({'role': 'assistant', 'content': smallBizyOutput});
         bizyOutput = "Anaysising";
+        BizyResponse response = await updateOutput(id);
 
-        if (analysisResponse.action == "finish_analysis") {
-          bizyType = 'bizy_main';
-          var response = await getResponse(_dialogues, id, bizyType);
-          bizyOutput = response.action + response.answer;
-          _dialogues.add({'role': 'assistant', 'content': bizyOutput});
-          if (response.answer == "break_task") {
-          } else if (response.answer == "change_excuse") {}
+        if (response.action == "finish_analysis") {
+          updateBizyType(response.action); //change back to bizy_main
+          response = await updateOutput(id);
+
+          callBees(response.action, id); //bizy might call another bees
           print('finish_analysis');
         }
       } else if (bizyType == "bizy_task") {
-        var taskyResponse = await getResponse(_dialogues, id, bizyType);
-        smallBizyOutput = taskyResponse.action + "\n" + taskyResponse.answer;
-        _dialogues.add({'role': 'assistant', 'content': smallBizyOutput});
         bizyOutput = "Breaking task!";
-        if (taskyResponse.action == "break_down_tasks") {
-          for (var step in taskyResponse.steps) {
+        BizyResponse response = await updateOutput(id);
+
+        if (response.action == "break_down_tasks") {
+          for (var step in response.steps) {
             print(step);
-            _dialogues.add({'role': 'assistant', 'content': step.toString()});
+            _dialogues.add(
+                DialogueMessage(role: 'assistant', content: smallBizyOutput));
           }
-        } else if (taskyResponse.action == "set_next_action") {
-          bizyType = 'bizy_main';
+        } else if (response.action == "set_next_action") {
+          updateBizyType(response.action);
           print("finish breaking task");
         }
-      } else if (bizyType == "change_excuse") {}
+      } else if (bizyType == "bizy_excuse") {
+        BizyResponse response = await updateOutput(id);
+
+        if (response.action == "change_excuse") {
+          updateBizyType(response.action);
+        }
+      }
     } catch (e) {
       print('Error handling submission: $e');
     }
   }
 }
 
-class Step {
-  final int step;
-  final String task;
-
-  Step({required this.step, required this.task});
-
-  factory Step.fromMap(Map<String, dynamic> map) {
-    return Step(
-      step: map['step'] ?? 0,
-      task: map['task'] ?? '',
-    );
-  }
-
-  @override
-  String toString() {
-    return 'Step $step: $task';
-  }
-}
-
-class BizyResponse {
-  final String answer;
-  final String action;
-  final List<Step> steps;
-
-  BizyResponse({
-    required this.answer,
-    required this.action,
-    this.steps = const [],
-  });
-
-  factory BizyResponse.fromMap(Map<String, dynamic> map) {
-    var stepsList =
-        (map['steps'] as List?)?.map((item) => Step.fromMap(item)).toList() ??
-            [];
-
-    return BizyResponse(
-      answer: map['answer'] ?? '',
-      action: map['action'] ?? '',
-      steps: stepsList,
-    );
-  }
-}
-
 Future<BizyResponse> getResponse(
-    Object dialogues, String id, String bizyType) async {
+    List<DialogueMessage> dialogues, String id, String bizyType) async {
+  final dialogueMaps = dialogues.map((d) => d.toMap()).toList();
   var response = await FirebaseFunctions.instance
       .httpsCallable('${bizyType}_completion')
       .call({
-    "dialogues": dialogues,
+    "dialogues": dialogueMaps,
     "user_id": id,
     "bizy_type": bizyType,
   });
