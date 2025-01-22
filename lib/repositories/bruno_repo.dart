@@ -1,5 +1,7 @@
 /// BrunoRepository handles all Bruno-related operations with Firestore database
 /// Including methods for creating, reading, and updating Bruno documents
+library;
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/bruno.dart';
 

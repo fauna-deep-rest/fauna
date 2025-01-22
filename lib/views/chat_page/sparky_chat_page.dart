@@ -7,6 +7,8 @@ import 'dart:async';
 import 'package:fauna/views/widgets/chat_widgets.dart';
 
 class SparkyChatPage extends StatefulWidget {
+  const SparkyChatPage({super.key});
+
   @override
   _SparkyChatPageState createState() => _SparkyChatPageState();
 }
@@ -48,7 +50,7 @@ class _SparkyChatPageState extends State<SparkyChatPage> {
       isGettingResponse = true;
     });
 
-    Timer.periodic(Duration(milliseconds: 500), (timer) {
+    Timer.periodic(const Duration(milliseconds: 500), (timer) {
       if (!mounted) {
         timer.cancel();
         return;
@@ -81,6 +83,7 @@ class _SparkyChatPageState extends State<SparkyChatPage> {
         .goBizy(); // Navigate to Bizy
   }
 
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: isLoading
@@ -122,7 +125,7 @@ class _SparkyChatPageState extends State<SparkyChatPage> {
                             isGettingResponse: isGettingResponse,
                           ),
 
-                          SizedBox(height: 16.0),
+                          const SizedBox(height: 16.0),
 
                           // Sparky image
                           Column(

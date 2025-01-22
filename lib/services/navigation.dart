@@ -39,9 +39,11 @@ final routerConfig = GoRouter(
         },
         routes: <RouteBase>[
           GoRoute(
-              path: AppRoutes.login, builder: (context, state) => LoginPage()),
+              path: AppRoutes.login,
+              builder: (context, state) => const NSDRPage()),
           GoRoute(
-              path: AppRoutes.home, builder: (context, state) => HomePage()),
+              path: AppRoutes.home,
+              builder: (context, state) => const HomePage()),
           GoRoute(
               path: AppRoutes.sparky,
               builder: (context, state) => SparkyChatPage()),
@@ -50,9 +52,10 @@ final routerConfig = GoRouter(
               builder: (context, state) => BizyChatPage()),
           GoRoute(
               path: AppRoutes.bruno,
-              builder: (context, state) => BrunoChatPage()),
+              builder: (context, state) => const BrunoChatPage()),
           GoRoute(
-              path: AppRoutes.nsdr, builder: (context, state) => NSDRPage()),
+              path: AppRoutes.nsdr,
+              builder: (context, state) => const NSDRPage()),
         ]),
   ],
   initialLocation: AppRoutes.login,

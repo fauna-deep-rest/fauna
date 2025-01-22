@@ -21,7 +21,7 @@ void main() async {
   } catch (e) {
     print('Error setting up emulator: $e');
   }
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {

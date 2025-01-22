@@ -52,7 +52,7 @@ class _BrunoChatPageState extends State<BrunoChatPage> {
       isGettingResponse = true;
     });
 
-    Timer.periodic(Duration(milliseconds: 500), (timer) {
+    Timer.periodic(const Duration(milliseconds: 500), (timer) {
       if (!mounted) {
         timer.cancel();
         return;
@@ -128,12 +128,12 @@ class _BrunoChatPageState extends State<BrunoChatPage> {
                               isGettingResponse: isGettingResponse,
                             ),
                           ),
-                          SizedBox(height: 16.0),
+                          const SizedBox(height: 16.0),
                           const BrunoImage(
                             imagePath: 'assets/images/bruno/bruno.png',
                             size: 200,
                           ),
-                          SizedBox(height: 16.0),
+                          const SizedBox(height: 16.0),
                           // Show start button if action is tutorial
                           if (brunoViewModel.brunoAction == 'tutorial')
                             NavigationButton(

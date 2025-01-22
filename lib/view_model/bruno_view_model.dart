@@ -1,5 +1,7 @@
 /// BrunoViewModel manages the business logic and state for Bruno-related features
 /// Handles communication between the UI layer and data repository
+library;
+
 import 'package:flutter/material.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import '../models/bruno.dart';
@@ -17,7 +19,7 @@ class BrunoViewModel with ChangeNotifier {
   String brunoAction = '';
 
   /// List of conversation messages between user and Bruno
-  List<Map<String, String>> _dialogues = [];
+  final List<Map<String, String>> _dialogues = [];
 
   /// Creates a new Bruno instance in the database
   /// @param brunoId - Unique identifier for Bruno

@@ -10,11 +10,6 @@ class AllUsersViewModel with ChangeNotifier {
   AllUsersViewModel({UserRepository? userRepository})
       : _userRepository = userRepository ?? UserRepository();
 
-  @override
-  void dispose() {
-    super.dispose();
-  }
-
   Future<User?> getUserById(String userId) async {
     try {
       final user = await _userRepository.getUserById(userId);

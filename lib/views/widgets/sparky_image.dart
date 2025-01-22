@@ -6,10 +6,10 @@ class SparkyImage extends StatelessWidget {
   final double size; // Size of the circular image
 
   const SparkyImage({
-    Key? key,
+    super.key,
     required this.imagePath,
     this.size = 200.0, // Default size
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

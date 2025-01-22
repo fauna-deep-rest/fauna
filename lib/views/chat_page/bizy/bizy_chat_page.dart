@@ -7,6 +7,8 @@ import 'dart:async';
 import 'package:fauna/views/widgets/chat_widgets.dart';
 
 class BizyChatPage extends StatefulWidget {
+  const BizyChatPage({super.key});
+
   @override
   _BizyChatPageState createState() => _BizyChatPageState();
 }
@@ -47,7 +49,7 @@ class _BizyChatPageState extends State<BizyChatPage> {
       isGettingResponse = true;
     });
 
-    Timer.periodic(Duration(milliseconds: 500), (timer) {
+    Timer.periodic(const Duration(milliseconds: 500), (timer) {
       if (!mounted) {
         timer.cancel();
         return;
@@ -68,6 +70,7 @@ class _BizyChatPageState extends State<BizyChatPage> {
     });
   }
 
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: isLoading
@@ -112,7 +115,7 @@ class _BizyChatPageState extends State<BizyChatPage> {
                                     isGettingResponse,
                           ),
 
-                          SizedBox(height: 16.0),
+                          const SizedBox(height: 16.0),
 
                           // Bizy image
                           Column(
@@ -123,7 +126,7 @@ class _BizyChatPageState extends State<BizyChatPage> {
                               ),
                               const SizedBox(height: 16.0),
                               if (bizyViewModel.showSmallBizy) ...[
-                                Text(
+                                const Text(
                                   "Planbee",
                                   style: TextStyle(
                                     color: Colors.black,

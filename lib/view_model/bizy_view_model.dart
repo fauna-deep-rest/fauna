@@ -9,7 +9,7 @@ class BizyViewModel with ChangeNotifier {
   Bizy? bizy;
   final BizyRepository _repository = BizyRepository();
 
-  List<Map<String, String>> _dialogues = [];
+  final List<Map<String, String>> _dialogues = [];
   String bizyType = 'bizy_main';
 
   String bizyOutput = '';
@@ -107,7 +107,7 @@ class BizyViewModel with ChangeNotifier {
       } else if (bizyType == "bizy_analysis") {
         var analysisResponse = await getResponse(_dialogues, id, bizyType);
         smallBizyOutput =
-            analysisResponse.answer + " " + analysisResponse.action;
+            "${analysisResponse.answer} ${analysisResponse.action}";
         _dialogues.add({'role': 'assistant', 'content': smallBizyOutput});
         bizyOutput = "Anaysising";
 
@@ -122,7 +122,7 @@ class BizyViewModel with ChangeNotifier {
         }
       } else if (bizyType == "bizy_task") {
         var taskyResponse = await getResponse(_dialogues, id, bizyType);
-        smallBizyOutput = taskyResponse.action + "\n" + taskyResponse.answer;
+        smallBizyOutput = "${taskyResponse.action}\n${taskyResponse.answer}";
         _dialogues.add({'role': 'assistant', 'content': smallBizyOutput});
         bizyOutput = "Breaking task!";
         if (taskyResponse.action == "break_down_tasks") {

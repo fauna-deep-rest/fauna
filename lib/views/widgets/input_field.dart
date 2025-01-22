@@ -4,9 +4,9 @@ class InputField extends StatefulWidget {
   final Function(String) onSubmitted; // Callback for text submission
 
   const InputField({
-    Key? key,
+    super.key,
     required this.onSubmitted,
-  }) : super(key: key);
+  });
 
   @override
   _InputFieldState createState() => _InputFieldState();
@@ -37,7 +37,7 @@ class _InputFieldState extends State<InputField> {
             child: TextField(
               decoration: InputDecoration(
                 hintText: "Say something...",
-                hintStyle: TextStyle(color: Colors.grey),
+                hintStyle: const TextStyle(color: Colors.grey),
                 filled: true,
                 fillColor: Colors.grey[800],
                 border: OutlineInputBorder(
@@ -45,7 +45,7 @@ class _InputFieldState extends State<InputField> {
                   borderSide: BorderSide.none,
                 ),
               ),
-              style: TextStyle(color: Colors.white),
+              style: const TextStyle(color: Colors.white),
               controller: controller, // Use the controller
               onSubmitted: (String value) {
                 if (controller.text.isNotEmpty) {
@@ -56,7 +56,7 @@ class _InputFieldState extends State<InputField> {
               },
             ),
           ),
-          SizedBox(width: 8.0),
+          const SizedBox(width: 8.0),
           GestureDetector(
             onTap: () {
               // Handle send button tap
@@ -68,7 +68,7 @@ class _InputFieldState extends State<InputField> {
             },
             child: CircleAvatar(
               backgroundColor: Colors.grey[800],
-              child: Icon(Icons.send, color: Colors.white),
+              child: const Icon(Icons.send, color: Colors.white),
             ),
           ),
         ],

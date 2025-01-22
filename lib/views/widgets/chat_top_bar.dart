@@ -9,13 +9,13 @@ class ChatTopBar extends StatelessWidget {
   final VoidCallback onHistoryPressed; // Callback for history button
 
   const ChatTopBar({
-    Key? key,
+    super.key,
     required this.title,
     required this.titleColor,
     required this.iconColor,
     required this.onBackPressed,
     required this.onHistoryPressed,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

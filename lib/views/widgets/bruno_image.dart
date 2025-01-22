@@ -6,10 +6,10 @@ class BrunoImage extends StatelessWidget {
   final double size; // Size of the image
 
   const BrunoImage({
-    Key? key,
+    super.key,
     required this.imagePath,
     this.size = 200.0, // Default size
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

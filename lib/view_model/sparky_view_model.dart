@@ -10,7 +10,7 @@ class SparkyViewModel with ChangeNotifier {
   final SparkyRepository _repository = SparkyRepository();
   //List<Map<String, String>> get dialogues => List.unmodifiable(_dialogues);
   String sparkyOutput = '';
-  List<Map<String, String>> _dialogues = [];
+  final List<Map<String, String>> _dialogues = [];
   bool showBizyButton = false;
   bool showBrunoButton = false;
 

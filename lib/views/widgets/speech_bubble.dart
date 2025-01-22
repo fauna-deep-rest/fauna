@@ -6,10 +6,10 @@ class SpeechBubble extends StatelessWidget {
   final bool isGettingResponse; // Flag to determine response state
 
   const SpeechBubble({
-    Key? key,
+    super.key,
     required this.text,
     required this.isGettingResponse,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

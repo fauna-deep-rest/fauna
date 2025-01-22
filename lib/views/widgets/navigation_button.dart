@@ -7,11 +7,11 @@ class NavigationButton extends StatelessWidget {
   final Color backgroundColor; // Background color of the button
 
   const NavigationButton({
-    Key? key,
+    super.key,
     required this.label,
     required this.onPressed,
     this.backgroundColor = Colors.blue, // Default background color
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
