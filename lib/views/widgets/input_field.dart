@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class InputField extends StatefulWidget {
-  final Function(String) onSubmitted; // Callback for text submission
+  final Function(String) onSubmitted;
 
   const InputField({
     Key? key,

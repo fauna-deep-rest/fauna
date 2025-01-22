@@ -1,181 +1,342 @@
-import 'package:fauna/models/user.dart';
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import '../repositories/bizy_repo.dart';
 import '../models/bizy.dart';
+import '../models/dialogue.dart';
+
+class BizyState {
+  final Bizy? bizy;
+  final bool isLoading;
+  final String currentBizyType;
+  final String mainOutput;
+  final String smallOutput;
+  final String beesName;
+  final bool showSmallBizy;
+  final String? error;
+  final List<DialogueMessage> dialogues;
+  final bool isSummaryAction;
+
+  const BizyState({
+    this.bizy,
+    this.isLoading = false,
+    this.currentBizyType = 'bizy_main',
+    this.mainOutput = '',
+    this.smallOutput = '',
+    this.beesName = 'Bizy',
+    this.showSmallBizy = false,
+    this.error,
+    this.dialogues = const [],
+    this.isSummaryAction = false,
+  });
+
+  BizyState copyWith({
+    Bizy? bizy,
+    bool? isLoading,
+    String? currentBizyType,
+    String? mainOutput,
+    String? smallOutput,
+    String? beesName,
+    bool? showSmallBizy,
+    String? error,
+    List<DialogueMessage>? dialogues,
+    bool? isSummaryAction,
+  }) {
+    return BizyState(
+      bizy: bizy ?? this.bizy,
+      isLoading: isLoading ?? this.isLoading,
+      currentBizyType: currentBizyType ?? this.currentBizyType,
+      mainOutput: mainOutput ?? this.mainOutput,
+      smallOutput: smallOutput ?? this.smallOutput,
+      showSmallBizy: showSmallBizy ?? this.showSmallBizy,
+      error: error,
+      dialogues: dialogues ?? this.dialogues,
+      isSummaryAction: isSummaryAction ?? this.isSummaryAction,
+    );
+  }
+}
+
+/// BizyViewModel manages the business logic and state for Bizy-related features
+/// Handles communication between the UI layer and data repository
 
 class BizyViewModel with ChangeNotifier {
-  Bizy? bizy;
   final BizyRepository _repository = BizyRepository();
-  //Todo: dialogues message class
-  List<DialogueMessage> _dialogues = [];
-  String bizyType = 'bizy_main';
+  BizyState _state = const BizyState();
 
-  String bizyOutput = '';
-  String smallBizyOutput = '';
-  bool showSmallBizy = false;
+  BizyState get state => _state;
 
-  Future<void> createBizy(String bizyId) async {
-    await _repository.createBizy(bizyId);
+  void _setState(BizyState newState) {
+    _state = newState;
+    notifyListeners();
   }
 
+  /// Creates a new Bizy instance in the database
+  /// @param bizyId - Unique identifier for Bizy
+  /// @return Future<void>
+  Future<void> createBizy(String bizyId) async {
+    try {
+      _setState(_state.copyWith(isLoading: true));
+      await _repository.createBizy(bizyId);
+      _setState(_state.copyWith(isLoading: false));
+    } catch (e) {
+      _setState(_state.copyWith(
+        isLoading: false,
+        error: 'Failed to create Bizy: $e',
+      ));
+    }
+  }
+
+  /// Adds a new summary to the current Bizy instance
+  /// @param newSummary - Summary text to add
+  /// @return Future<void>
   Future<void> addSummary(String newSummary) async {
-    if (bizy != null) {
-      bizy!.addSummary(newSummary);
-      await _repository.addSummary(bizy!.id, newSummary);
-      notifyListeners();
+    if (_state.bizy != null) {
+      try {
+        _setState(_state.copyWith(isLoading: true));
+        _state.bizy!.addSummary(newSummary);
+        await _repository.addSummary(_state.bizy!.id, newSummary);
+        _setState(_state.copyWith(isLoading: false));
+      } catch (e) {
+        _setState(_state.copyWith(
+          isLoading: false,
+          error: 'Failed to add summary: $e',
+        ));
+      }
     }
   }
 
   Future<void> updateTodoList(List<Map<String, dynamic>> newTodoList) async {
-    if (bizy != null) {
-      bizy!.updateTodoList(newTodoList);
-      await _repository.updateTodoList(bizy!.id, newTodoList);
-      notifyListeners();
+    if (_state.bizy != null) {
+      try {
+        _setState(_state.copyWith(isLoading: true));
+        _state.bizy!.updateTodoList(newTodoList);
+        await _repository.updateTodoList(_state.bizy!.id, newTodoList);
+        _setState(_state.copyWith(isLoading: false));
+      } catch (e) {
+        _setState(_state.copyWith(
+          isLoading: false,
+          error: 'Failed to update todo list: $e',
+        ));
+      }
     }
   }
 
-  // Initialize function to get bizy info
+  /// Loads initial data for Bizy and processes it through AI
+  /// @param bizyId - Unique identifier for Bizy
+  /// @return Future<void>
   Future<void> loadData(String id) async {
     try {
-      bizy = await _repository.fetchBizy("bizy_$id");
+      _setState(_state.copyWith(isLoading: true));
+
+      final bizy = await _repository.fetchBizy("bizy_$id");
+      var response =
+          await getResponse(_state.dialogues, id, _state.currentBizyType);
+
+      final dialogues = [..._state.dialogues];
+      dialogues
+          .add(DialogueMessage(role: 'assistant', content: response.answer));
+
+      _setState(_state.copyWith(
+        isLoading: false,
+        bizy: bizy,
+        mainOutput: response.answer,
+        dialogues: dialogues,
+      ));
     } catch (e) {
-      print("load bizy failed");
-    }
-    try {
-      var response = await getResponse(_dialogues, id, bizyType);
-      bizyOutput = response.answer;
-      _dialogues.add(DialogueMessage(role: 'assistant', content: bizyOutput));
-    } catch (e) {
-      print('Error loading prompt: $e');
-    } finally {
-      print("load data for bizy success.");
-      notifyListeners();
+      _setState(_state.copyWith(
+        isLoading: false,
+        error: 'Failed to load data: $e',
+      ));
     }
   }
 
-  /// Update BizyType based on action from response. show small speech bubble when switch to small bees.
+  /// Updates the current Bizy type based on the specified action
+  /// @param action - The action that determines the new Bizy type
   void updateBizyType(String action) {
+    String newBizyType;
+    String bee;
     switch (action) {
       case 'analysis':
-        bizyType = 'bizy_analysis';
+        newBizyType = 'bizy_analysis';
+        bee = 'Planbee';
+        _setState(_state.copyWith(currentBizyType: newBizyType, beesName: bee));
         break;
       case 'break_task':
-        bizyType = 'bizy_task';
+        newBizyType = 'bizy_task';
+        bee = 'Taskbee';
+        _setState(_state.copyWith(currentBizyType: newBizyType, beesName: bee));
         break;
       case 'excuse':
-        bizyType = 'bizy_excuse';
+        newBizyType = 'bizy_excuse';
+        bee = 'Excubee';
+        _setState(_state.copyWith(currentBizyType: newBizyType, beesName: bee));
         break;
       case 'finish_analysis':
-        bizyType = 'bizy_main';
-        break;
       case 'set_next_action':
-        bizyType = 'bizy_main';
-        break;
       case 'change_excuse':
-        bizyType = 'bizy_main';
+        newBizyType = 'bizy_main';
+        _setState(_state.copyWith(currentBizyType: newBizyType));
         break;
       default:
-        print("No action matched. Current bizyType remains: $bizyType");
-        break;
+        return;
     }
   }
 
-  /// Handle actions that main Bizy call small bees.
+  /// Calls the Bees service based on the specified action
+  /// @param action - The action to be performed
+  /// @param id - Unique identifier for Bizy
+  /// @return Future<void>
   Future<void> callBees(String action, String id) async {
-    if (action == 'analysis') {
-      updateBizyType(action);
-      showSmallBizy = true;
-      await updateOutput(id);
-    } else if (action == 'break_task') {
-      updateBizyType(action);
-      showSmallBizy = true;
+    try {
+      if (action == 'analysis') {
+        updateBizyType(action);
+        _setState(_state.copyWith(showSmallBizy: true));
+        await updateOutput(id);
+      }
+      if (action == 'break_task') {
+        updateBizyType(action);
+        _setState(_state.copyWith(showSmallBizy: true));
 
-      var taskResponse = await updateOutput(id);
-      if (taskResponse.action == "break_down_tasks") {
-        for (var step in taskResponse.steps) {
-          _dialogues.add(
-              DialogueMessage(role: 'assistant', content: step.toString()));
+        var taskResponse = await updateOutput(id);
+        if (taskResponse.action == "break_down_tasks") {
+          final dialogues = [..._state.dialogues];
+          String stepsOutput = '${taskResponse.answer}\n';
+          for (var step in taskResponse.steps) {
+            dialogues.add(
+                DialogueMessage(role: 'assistant', content: step.toString()));
+            stepsOutput += '$step\n';
+          }
+          _setState(_state.copyWith(
+            dialogues: dialogues,
+            smallOutput: stepsOutput,
+          ));
         }
       }
-    } else if (action == 'change_excuse') {
-      updateBizyType(action);
-      showSmallBizy = true;
-      await updateOutput(id);
-    } else {
-      return;
+      if (action == 'excuse') {
+        updateBizyType(action);
+        _setState(_state.copyWith(showSmallBizy: true));
+        await updateOutput(id);
+      }
+      if (action == 'summary') {
+        _setState(_state.copyWith(isSummaryAction: true));
+      }
+    } catch (e) {
+      _setState(_state.copyWith(
+        error: 'Failed to process action: $e',
+      ));
     }
   }
 
-  /// Update output based on bizyType
+  /// Updates the output based on the current state and AI response
+  /// @param id - Unique identifier for Bizy
+  /// @return Future<BizyResponse> - Returns the response from the AI
   Future<BizyResponse> updateOutput(String id) async {
-    BizyResponse response = await getResponse(_dialogues, id, bizyType);
+    try {
+      BizyResponse response = await getResponse(
+        _state.dialogues,
+        id,
+        _state.currentBizyType,
+      );
 
-    if (bizyType == 'bizy_main') {
-      bizyOutput = response.action + response.answer;
-      _dialogues.add(DialogueMessage(role: 'assistant', content: bizyOutput));
-    } else {
-      smallBizyOutput = response.action + response.answer;
-      _dialogues
-          .add(DialogueMessage(role: 'assistant', content: smallBizyOutput));
+      final dialogues = [..._state.dialogues];
+      if (_state.currentBizyType == 'bizy_main') {
+        final output = response.action + response.answer;
+        dialogues.add(DialogueMessage(role: 'assistant', content: output));
+        _setState(_state.copyWith(
+          mainOutput: output,
+          dialogues: dialogues,
+        ));
+      } else {
+        final output = response.action + response.answer;
+        dialogues.add(DialogueMessage(role: 'assistant', content: output));
+        _setState(_state.copyWith(
+          smallOutput: output,
+          dialogues: dialogues,
+        ));
+      }
+
+      return response;
+    } catch (e) {
+      _setState(_state.copyWith(
+        isLoading: false,
+        error: 'Failed to update output: $e',
+      ));
+      rethrow;
     }
-
-    return response;
   }
 
-  /// Logic for Bizy to handle user's input
+  /// Handles user input submission and processes it through AI
+  /// @param id - User identifier
+  /// @param prompt - User input text
+  /// @param context - BuildContext for UI updates
+  /// @return Future<void>
   Future<void> handleSubmit(
       String prompt, String id, BuildContext context) async {
     if (prompt.trim().isEmpty) return;
-    _dialogues.add(DialogueMessage(role: 'user', content: prompt));
-    try {
-      if (bizyType == "bizy_main") {
-        showSmallBizy = false;
 
+    try {
+      _setState(_state.copyWith(isLoading: true));
+
+      final dialogues = [..._state.dialogues];
+      dialogues.add(DialogueMessage(role: 'user', content: prompt));
+      _setState(_state.copyWith(dialogues: dialogues));
+
+      if (_state.currentBizyType == "bizy_main") {
+        _setState(_state.copyWith(showSmallBizy: false));
         BizyResponse response = await updateOutput(id);
         await callBees(response.action, id);
-        if (response.action == 'summary') {
-          // todo: save after conversation
-        }
-      } else if (bizyType == "bizy_analysis") {
-        bizyOutput = "Anaysising";
+      } else if (_state.currentBizyType == "bizy_analysis") {
+        _setState(_state.copyWith(mainOutput: "Analysing"));
         BizyResponse response = await updateOutput(id);
 
         if (response.action == "finish_analysis") {
-          updateBizyType(response.action); //change back to bizy_main
-          response = await updateOutput(id);
-
-          callBees(response.action, id); //bizy might call another bees
-          print('finish_analysis');
+          updateBizyType(response.action);
+          // response = await updateOutput(id);
+          // await Future.delayed(Duration(seconds: 3));
+          // await callBees(response.action, id);
         }
-      } else if (bizyType == "bizy_task") {
-        bizyOutput = "Breaking task!";
+      } else if (_state.currentBizyType == "bizy_task") {
+        _setState(_state.copyWith(mainOutput: "Breaking task!"));
         BizyResponse response = await updateOutput(id);
 
         if (response.action == "break_down_tasks") {
+          final newDialogues = [..._state.dialogues];
+          String stepsOutput = '${response.answer}\n';
           for (var step in response.steps) {
-            print(step);
-            _dialogues.add(
-                DialogueMessage(role: 'assistant', content: smallBizyOutput));
+            newDialogues.add(DialogueMessage(
+              role: 'assistant',
+              content: step.toString(),
+            ));
+            stepsOutput += '$step\n';
           }
+          _setState(_state.copyWith(
+            dialogues: newDialogues,
+            smallOutput: stepsOutput,
+          ));
         } else if (response.action == "set_next_action") {
           updateBizyType(response.action);
-          print("finish breaking task");
         }
-      } else if (bizyType == "bizy_excuse") {
+      } else if (_state.currentBizyType == "bizy_excuse") {
         BizyResponse response = await updateOutput(id);
-
         if (response.action == "change_excuse") {
           updateBizyType(response.action);
         }
       }
+
+      _setState(_state.copyWith(isLoading: false));
     } catch (e) {
-      print('Error handling submission: $e');
+      _setState(_state.copyWith(
+        isLoading: false,
+        error: 'Failed to handle submission: $e',
+      ));
     }
   }
 }
 
+/// Gets the response from the AI based on the dialogues and Bizy type
+/// @param dialogues - List of dialogue messages
+/// @param id - Unique identifier for user
+/// @param bizyType - Current type of Bizy
+/// @return Future<BizyResponse> - Returns the response from the AI
 Future<BizyResponse> getResponse(
     List<DialogueMessage> dialogues, String id, String bizyType) async {
   final dialogueMaps = dialogues.map((d) => d.toMap()).toList();
