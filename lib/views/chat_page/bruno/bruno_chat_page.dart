@@ -137,7 +137,7 @@ class _BrunoChatPageState extends State<BrunoChatPage> {
                           // Show start button if action is tutorial
                           if (brunoViewModel.brunoAction == 'tutorial')
                             NavigationButton(
-                              label: "開始",
+                              label: "Start",
                               onPressed:
                                   startMeditation, // Call startMeditation function
                             ),

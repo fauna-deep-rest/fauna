@@ -16,7 +16,9 @@ class SpeechBubble extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
       child: Container(
+        height: 100, // 固定高度
         padding: const EdgeInsets.all(16.0),
+        alignment: Alignment.center, // 確保內容水平置中
         decoration: BoxDecoration(
           color: Colors.black.withOpacity(0.7), // Background color
           borderRadius: BorderRadius.circular(16.0), // Rounded corners
@@ -24,7 +26,7 @@ class SpeechBubble extends StatelessWidget {
         child: Text(
           text, // Display the text
           style: const TextStyle(color: Colors.white, fontSize: 16),
-          textAlign: TextAlign.center,
+          textAlign: TextAlign.center, // 文字水平置中
         ),
       ),
     );
