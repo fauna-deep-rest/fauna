@@ -25,7 +25,9 @@ class _SparkyChatPageState extends State<SparkyChatPage> {
   @override
   void initState() {
     super.initState();
-    _loadData();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadData(); // Call your loadData method here
+    });
   }
 
   @override
@@ -121,7 +123,7 @@ class _SparkyChatPageState extends State<SparkyChatPage> {
                           SpeechBubble(
                             text: isGettingResponse
                                 ? output
-                                : sparkyViewModel.sparkyOutput,
+                                : sparkyViewModel.state.sparkyOutput,
                             isGettingResponse: isGettingResponse,
                           ),
 
@@ -135,12 +137,12 @@ class _SparkyChatPageState extends State<SparkyChatPage> {
                                 size: 200,
                               ),
                               const SizedBox(height: 16.0),
-                              if (sparkyViewModel.showBrunoButton)
+                              if (sparkyViewModel.state.showBrunoButton)
                                 NavigationButton(
                                   label: 'Talk to Bruno',
                                   onPressed: () => navigateToBruno(context),
                                 ),
-                              if (sparkyViewModel.showBizyButton)
+                              if (sparkyViewModel.state.showBizyButton)
                                 NavigationButton(
                                   label: 'Talk to Bizy',
                                   onPressed: () => navigateToBizy(context),

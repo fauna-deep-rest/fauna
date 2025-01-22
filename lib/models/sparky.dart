@@ -33,3 +33,20 @@ class Sparky with ChangeNotifier {
     notifyListeners();
   }
 }
+
+class SparkyResponse {
+  final String answer;
+  final String action;
+
+  SparkyResponse({
+    required this.answer,
+    required this.action,
+  });
+
+  factory SparkyResponse.fromMap(Map<String, dynamic> map) {
+    return SparkyResponse(
+      answer: map['answer'] ?? '',
+      action: map['action'] ?? '',
+    );
+  }
+}
