@@ -145,7 +145,7 @@ class _BrunoChatPageState extends State<BrunoChatPage> {
                             ),
                           if (brunoViewModel.state.brunoAction == 'concern')
                             NavigationButton(
-                              label: "返回主頁",
+                              label: "Back to Homepage",
                               onPressed:
                                   goToHomePage, // Call goToHomePage function
                             ),
