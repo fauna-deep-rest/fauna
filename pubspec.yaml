@@ -51,6 +51,7 @@ dev_dependencies:
   # rules and activating additional ones.
   flutter_lints: ^3.0.0
   flutter_svg: ^1.1.0
+  rive: ^0.12.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -71,6 +72,7 @@ flutter:
     - assets/images/bruno/bruno.png
     - assets/images/bruno/bruno.svg
     - assets/images/sparky/sparky.png
+    - assets/animations/bruno.riv
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware

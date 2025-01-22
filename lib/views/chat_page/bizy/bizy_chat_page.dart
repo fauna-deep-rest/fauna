@@ -25,7 +25,9 @@ class _BizyChatPageState extends State<BizyChatPage> {
     super.initState();
     bizyViewModel = Provider.of<BizyViewModel>(context, listen: false);
     userViewModel = Provider.of<AllUsersViewModel>(context, listen: false);
-    _loadData();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadData(); // Call your loadData method here
+    });
   }
 
   @override
@@ -37,7 +39,7 @@ class _BizyChatPageState extends State<BizyChatPage> {
     setState(() {
       isLoading = true;
     });
-    await bizyViewModel.loadData("bizy_01");
+    await bizyViewModel.loadData("01");
     setState(() {
       isLoading = false;
     });
@@ -68,6 +70,11 @@ class _BizyChatPageState extends State<BizyChatPage> {
     setState(() {
       isGettingResponse = false;
     });
+  }
+
+  void navigateTohome(BuildContext context) {
+    Provider.of<NavigationService>(context, listen: false)
+        .goHome(); // Navigate to Bruno
   }
 
   @override
@@ -106,12 +113,14 @@ class _BizyChatPageState extends State<BizyChatPage> {
                         children: [
                           // Speech bubble
                           SpeechBubble(
-                            text: bizyViewModel.bizyType == 'bizy_main' &&
+                            text: bizyViewModel.state.currentBizyType ==
+                                        'bizy_main' &&
                                     isGettingResponse
                                 ? output
-                                : bizyViewModel.bizyOutput,
+                                : bizyViewModel.state.mainOutput,
                             isGettingResponse:
-                                bizyViewModel.bizyType == 'bizy_main' &&
+                                bizyViewModel.state.currentBizyType ==
+                                        'bizy_main' &&
                                     isGettingResponse,
                           ),
 
@@ -125,9 +134,9 @@ class _BizyChatPageState extends State<BizyChatPage> {
                                 size: 200,
                               ),
                               const SizedBox(height: 16.0),
-                              if (bizyViewModel.showSmallBizy) ...[
+                              if (bizyViewModel.state.showSmallBizy) ...[
                                 Text(
-                                  bizyViewModel.bizyType,
+                                  bizyViewModel.state.beesName,
                                   style: TextStyle(
                                     color: Colors.black,
                                     fontSize: 18,
@@ -135,15 +144,21 @@ class _BizyChatPageState extends State<BizyChatPage> {
                                   ),
                                 ),
                                 SpeechBubble(
-                                  text: bizyViewModel.bizyType != 'bizy_main' &&
+                                  text: bizyViewModel.state.currentBizyType !=
+                                              'bizy_main' &&
                                           isGettingResponse
                                       ? output
-                                      : bizyViewModel.smallBizyOutput,
+                                      : bizyViewModel.state.smallOutput,
                                   isGettingResponse:
-                                      bizyViewModel.bizyType != 'bizy_main' &&
+                                      bizyViewModel.state.currentBizyType !=
+                                              'bizy_main' &&
                                           isGettingResponse,
                                 ),
-                              ]
+                              ],
+                              if (bizyViewModel.state.isSummaryAction)
+                                NavigationButton(
+                                    label: 'Back to home page',
+                                    onPressed: () => navigateTohome(context))
                             ],
                           ),
                         ],
@@ -151,12 +166,13 @@ class _BizyChatPageState extends State<BizyChatPage> {
                     ),
 
                     // Chat input
-                    Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: InputField(
-                        onSubmitted: _handleSubmit,
+                    if (!bizyViewModel.state.isSummaryAction)
+                      Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: InputField(
+                          onSubmitted: _handleSubmit,
+                        ),
                       ),
-                    ),
                   ],
                 ),
               ),

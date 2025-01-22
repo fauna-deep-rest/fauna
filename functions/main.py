@@ -74,8 +74,7 @@ def sparky_completion(req: https_fn.CallableRequest) -> any:
                                   message="Error",
                                   details=e)
 
-# todo: consider procrastination type
-# todo: seperate to main, tasky, analy completion
+# todo: summary for bizy
 @https_fn.on_call(secrets=["OPENAI_APIKEY"]) 
 def bizy_main_completion(req: https_fn.CallableRequest) -> any:
     client = OpenAI(api_key=os.environ.get("OPENAI_APIKEY"))
@@ -88,11 +87,9 @@ def bizy_main_completion(req: https_fn.CallableRequest) -> any:
 
         prompt = bizy_prompt.get_prompt(bizy_type)
         if latest_summary:
-            prompt.append({"role":"assistant", "content":"please consider this SUMMARY for the user: " + latest_summary})  # 如果user是直接點選bizy的？
+            prompt.append({"role":"assistant", "content":"this is SUMMARY of conversation between Sparky and user, please consider this before you greet to user: " + latest_summary})
         prompt += dialogues
-
         prompt.append({'role': 'assistant', 'content': "You are the leader of a group of bees that help users manage procrastination and time."})
-
     except Exception as e:
         raise https_fn.HttpsError(code=https_fn.FunctionsErrorCode.INVALID_ARGUMENT,
                                   message=('Something wrong with the bizy prompt.'),

@@ -40,7 +40,7 @@ final routerConfig = GoRouter(
         routes: <RouteBase>[
           GoRoute(
               path: AppRoutes.login,
-              builder: (context, state) => const NSDRPage()),
+              builder: (context, state) => const LoginPage()),
           GoRoute(
               path: AppRoutes.home,
               builder: (context, state) => const HomePage()),
