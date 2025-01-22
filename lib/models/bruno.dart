@@ -69,3 +69,20 @@ class Record {
     );
   }
 }
+
+class BrunoResponse {
+  final String answer;
+  final String action;
+
+  BrunoResponse({
+    required this.answer,
+    required this.action,
+  });
+
+  factory BrunoResponse.fromMap(Map<String, dynamic> map) {
+    return BrunoResponse(
+      answer: map['answer'] ?? '',
+      action: map['action'] ?? '',
+    );
+  }
+}

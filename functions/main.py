@@ -14,7 +14,7 @@ from firebase_admin import initialize_app, credentials, firestore
 import sparky_prompt, bizy_prompt, bruno_prompt
 
 
-cred = credentials.Certificate("fauna-ed8b5-firebase-adminsdk-h5itr-b46b7666c2.json") # todo: put certufication key here
+cred = credentials.Certificate("fauna-ed8b5-firebase-adminsdk-h5itr-dcc0f3f786.json") # todo: put certufication key here
 initialize_app(cred)
 db = firestore.client()
 
@@ -45,7 +45,7 @@ def sparky_completion(req: https_fn.CallableRequest) -> any:
             if not dialogues:
                 prompt.append({
                     "role": "system", 
-                    "content": "This is the start of this conversation. Greet to user based on the memory. Asking if user have new problem."
+                    "content": "This is the start of this conversation. Greet to user based on the memory and ask if user have new problem."
                 })
         
         if dialogues:

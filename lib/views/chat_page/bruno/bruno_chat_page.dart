@@ -28,7 +28,9 @@ class _BrunoChatPageState extends State<BrunoChatPage> {
   @override
   void initState() {
     super.initState();
-    _loadData();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadData(); // Call your loadData method here
+    });
   }
 
   @override
@@ -124,7 +126,7 @@ class _BrunoChatPageState extends State<BrunoChatPage> {
                             child: SpeechBubble(
                               text: isGettingResponse
                                   ? output
-                                  : brunoViewModel.brunoOutput,
+                                  : brunoViewModel.state.brunoOutput,
                               isGettingResponse: isGettingResponse,
                             ),
                           ),
@@ -135,13 +137,13 @@ class _BrunoChatPageState extends State<BrunoChatPage> {
                           ),
                           const SizedBox(height: 16.0),
                           // Show start button if action is tutorial
-                          if (brunoViewModel.brunoAction == 'tutorial')
+                          if (brunoViewModel.state.brunoAction == 'tutorial')
                             NavigationButton(
                               label: "Start",
                               onPressed:
                                   startMeditation, // Call startMeditation function
                             ),
-                          if (brunoViewModel.brunoAction == 'concern')
+                          if (brunoViewModel.state.brunoAction == 'concern')
                             NavigationButton(
                               label: "返回主頁",
                               onPressed:
