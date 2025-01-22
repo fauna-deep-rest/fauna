@@ -126,8 +126,8 @@ class _BizyChatPageState extends State<BizyChatPage> {
                               ),
                               const SizedBox(height: 16.0),
                               if (bizyViewModel.showSmallBizy) ...[
-                                const Text(
-                                  "Planbee",
+                                Text(
+                                  bizyViewModel.bizyType,
                                   style: TextStyle(
                                     color: Colors.black,
                                     fontSize: 18,
