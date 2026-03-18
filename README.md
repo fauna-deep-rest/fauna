@@ -24,7 +24,7 @@ The core of the Fauna Project experience lies in its distinct AI agents, each wi
 
 The application provides a seamless flow from agent selection to personalized guidance.
 
-[Screenshots](./screenshot.png)
+![Screenshots](./screenshot.png)
 
 ## 🏗 System Architecture
 
