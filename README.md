@@ -15,7 +15,7 @@ Our goal is to create a delightful interaction that helps users manage daily cha
 The core of the Fauna Project experience lies in its distinct AI agents, each with a unique personality and specialized function.
 
 | Agent | Personality & Goal |
-| :--- | :--- | :--- |
+| :--- | :--- |
 | **Sparky** | **Problem Analyzer**: Friendly, energetic, and logical. Sparky analyzes your situation to break down complex issues. |
 | **Bizy** | **Productivity Guide**: Meticulous and structured. Bizy helps you deal with procrastination and set actionable goals. |
 | **Bruno** | **Meditation Guide**: Calm, gentle, and peaceful. Bruno guides you through relaxation and breathing exercises. |
@@ -24,7 +24,7 @@ The core of the Fauna Project experience lies in its distinct AI agents, each wi
 
 The application provides a seamless flow from agent selection to personalized guidance.
 
-
+[Screenshots](./screenshot.png)
 
 ## 🏗 System Architecture
 
